@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --color-taffy-50: oklch(0.97 0.016 2.477);
+
+  --color-taffy-100: oklch(0.941 0.032 2.477);
+
+  --color-taffy-200: oklch(0.894 0.061 2.477);
+
+  --color-taffy-300: oklch(0.811 0.117 2.477);
+
+  --color-taffy-400: oklch(0.716 0.191 2.477);
+
+  --color-taffy-500: oklch(0.657 0.228 2.477);
+
+  --color-taffy-600: oklch(0.602 0.233 2.477);
+
+  --color-taffy-700: oklch(0.529 0.207 2.477);
+
+  --color-taffy-800: oklch(0.467 0.181 2.477);
+
+  --color-taffy-900: oklch(0.421 0.161 2.477);
+
+  --color-taffy-950: oklch(0.278 0.108 2.477);
+}
+
+body {
+  font-family: "GoogleSans-Regular", sans-serif;
+}
+
+/* ===== Page Transition Animations ===== */
+
+/* Shared active states */
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active,
+.slide-up-enter-active,
+.slide-up-leave-active,
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.35s ease;
+}
+
+/* ── slide-left: new page enters from right, old page exits left ── */
+.slide-left-enter-from {
+  transform: translateX(40px);
+  opacity: 0;
+}
+.slide-left-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-left-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-left-leave-to {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+
+/* ── slide-right: new page enters from left, old page exits right ── */
+.slide-right-enter-from {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+.slide-right-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-right-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-right-leave-to {
+  transform: translateX(40px);
+  opacity: 0;
+}
+
+/* ── slide-up: new page enters from below, old page exits up ── */
+.slide-up-enter-from {
+  transform: translateY(32px);
+  opacity: 0;
+}
+.slide-up-enter-to {
+  transform: translateY(0);
+  opacity: 1;
+}
+.slide-up-leave-from {
+  transform: translateY(0);
+  opacity: 1;
+}
+.slide-up-leave-to {
+  transform: translateY(-32px);
+  opacity: 0;
+}
+
+/* ── fade: new page fades in, old page fades out (no translation) ── */
+.fade-enter-from {
+  opacity: 0;
+}
+.fade-enter-to {
+  opacity: 1;
+}
+.fade-leave-from {
+  opacity: 1;
+}
+.fade-leave-to {
+  opacity: 0;
+}
