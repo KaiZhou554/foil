@@ -397,12 +397,28 @@ function generateTextIcon(letter: string, bgColor: string, size: number, isForeg
       ctx.quadraticCurveTo(0, 0, radius, 0)
       ctx.closePath()
       ctx.fill()
+    } else {
+      // Foreground: draw the bgColor as rounded rect too, so the icon
+      // has a visible colored shape even before adaptive icon compositing.
+      // Android's adaptive icon masks this with the device shape.
+      ctx.fillStyle = bgColor
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(size - radius, 0)
+      ctx.quadraticCurveTo(size, 0, size, radius)
+      ctx.lineTo(size, size - radius)
+      ctx.quadraticCurveTo(size, size, size - radius, size)
+      ctx.lineTo(radius, size)
+      ctx.quadraticCurveTo(0, size, 0, size - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.fill()
     }
-    // Foreground: no fill — only letter on transparent canvas
 
-    // Draw center letter (always visible)
-    ctx.fillStyle = isForeground ? bgColor : '#FFFFFF'
-    const fontSize = Math.round(size * (isForeground ? 0.6 : 0.5))
+    // Draw center letter (white on both foreground and launcher)
+    ctx.fillStyle = '#FFFFFF'
+    const fontSize = Math.round(size * 0.5)
     ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -415,7 +431,7 @@ function generateTextIcon(letter: string, bgColor: string, size: number, isForeg
   })
 }
 
-function resizeImage(dataUrl: string, size: number, isForeground: boolean): Promise<Blob> {
+function resizeImage(dataUrl: string, size: number, _isForeground: boolean): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
@@ -425,31 +441,26 @@ function resizeImage(dataUrl: string, size: number, isForeground: boolean): Prom
       const ctx = canvas.getContext('2d')!
       ctx.clearRect(0, 0, size, size)
 
-      // Crop image to square center
+      // Clip to rounded rectangle (same for foreground and launcher)
+      const radius = size * 0.22
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(size - radius, 0)
+      ctx.quadraticCurveTo(size, 0, size, radius)
+      ctx.lineTo(size, size - radius)
+      ctx.quadraticCurveTo(size, size, size - radius, size)
+      ctx.lineTo(radius, size)
+      ctx.quadraticCurveTo(0, size, 0, size - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.clip()
+
+      // Crop image to square center and draw
       const min = Math.min(img.width, img.height)
       const sx = (img.width - min) / 2
       const sy = (img.height - min) / 2
-
-      if (isForeground) {
-        // Foreground: draw image directly (user image is the content)
-        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size)
-      } else {
-        // Launcher: clip to rounded rect, then draw image
-        const radius = size * 0.22
-        ctx.beginPath()
-        ctx.moveTo(radius, 0)
-        ctx.lineTo(size - radius, 0)
-        ctx.quadraticCurveTo(size, 0, size, radius)
-        ctx.lineTo(size, size - radius)
-        ctx.quadraticCurveTo(size, size, size - radius, size)
-        ctx.lineTo(radius, size)
-        ctx.quadraticCurveTo(0, size, 0, size - radius)
-        ctx.lineTo(0, radius)
-        ctx.quadraticCurveTo(0, 0, radius, 0)
-        ctx.closePath()
-        ctx.clip()
-        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size)
-      }
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size)
       canvas.toBlob((blob) => {
         if (blob) resolve(blob)
         else reject(new Error('WebP encoding failed'))
