@@ -371,36 +371,38 @@ function extractIconSize(path: string): number {
   return 0
 }
 
-function generateTextIcon(letter: string, bgColor: string, size: number, _isForeground: boolean): Promise<Blob> {
+function generateTextIcon(letter: string, bgColor: string, size: number, isForeground: boolean): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
     canvas.width = size
     canvas.height = size
     const ctx = canvas.getContext('2d')!
     const half = size / 2
-    const radius = size * 0.22 // rounded corner radius
+    const radius = size * 0.22
 
-    // Always: transparent → rounded rect → letter
-    ctx.clearRect(0, 0, size, size)
+    ctx.clearRect(0, 0, size, size) // start fully transparent
 
-    // Draw rounded rectangle
-    ctx.fillStyle = bgColor
-    ctx.beginPath()
-    ctx.moveTo(radius, 0)
-    ctx.lineTo(size - radius, 0)
-    ctx.quadraticCurveTo(size, 0, size, radius)
-    ctx.lineTo(size, size - radius)
-    ctx.quadraticCurveTo(size, size, size - radius, size)
-    ctx.lineTo(radius, size)
-    ctx.quadraticCurveTo(0, size, 0, size - radius)
-    ctx.lineTo(0, radius)
-    ctx.quadraticCurveTo(0, 0, radius, 0)
-    ctx.closePath()
-    ctx.fill()
+    if (!isForeground) {
+      // Launcher icon: rounded rectangle with color
+      ctx.fillStyle = bgColor
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(size - radius, 0)
+      ctx.quadraticCurveTo(size, 0, size, radius)
+      ctx.lineTo(size, size - radius)
+      ctx.quadraticCurveTo(size, size, size - radius, size)
+      ctx.lineTo(radius, size)
+      ctx.quadraticCurveTo(0, size, 0, size - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.fill()
+    }
+    // Foreground: no fill — only letter on transparent canvas
 
-    // Draw center letter
-    ctx.fillStyle = '#FFFFFF'
-    const fontSize = Math.round(size * 0.5)
+    // Draw center letter (always visible)
+    ctx.fillStyle = isForeground ? bgColor : '#FFFFFF'
+    const fontSize = Math.round(size * (isForeground ? 0.6 : 0.5))
     ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -413,7 +415,7 @@ function generateTextIcon(letter: string, bgColor: string, size: number, _isFore
   })
 }
 
-function resizeImage(dataUrl: string, size: number, _isForeground: boolean): Promise<Blob> {
+function resizeImage(dataUrl: string, size: number, isForeground: boolean): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
@@ -421,30 +423,33 @@ function resizeImage(dataUrl: string, size: number, _isForeground: boolean): Pro
       canvas.width = size
       canvas.height = size
       const ctx = canvas.getContext('2d')!
-      const radius = size * 0.22
-
-      // Clear to transparent, draw rounded rect clip
       ctx.clearRect(0, 0, size, size)
 
-      // Create rounded rectangle clipping path
-      ctx.beginPath()
-      ctx.moveTo(radius, 0)
-      ctx.lineTo(size - radius, 0)
-      ctx.quadraticCurveTo(size, 0, size, radius)
-      ctx.lineTo(size, size - radius)
-      ctx.quadraticCurveTo(size, size, size - radius, size)
-      ctx.lineTo(radius, size)
-      ctx.quadraticCurveTo(0, size, 0, size - radius)
-      ctx.lineTo(0, radius)
-      ctx.quadraticCurveTo(0, 0, radius, 0)
-      ctx.closePath()
-      ctx.clip()
-
-      // Draw the image (clipped to rounded rect)
+      // Crop image to square center
       const min = Math.min(img.width, img.height)
       const sx = (img.width - min) / 2
       const sy = (img.height - min) / 2
-      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size)
+
+      if (isForeground) {
+        // Foreground: draw image directly (user image is the content)
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size)
+      } else {
+        // Launcher: clip to rounded rect, then draw image
+        const radius = size * 0.22
+        ctx.beginPath()
+        ctx.moveTo(radius, 0)
+        ctx.lineTo(size - radius, 0)
+        ctx.quadraticCurveTo(size, 0, size, radius)
+        ctx.lineTo(size, size - radius)
+        ctx.quadraticCurveTo(size, size, size - radius, size)
+        ctx.lineTo(radius, size)
+        ctx.quadraticCurveTo(0, size, 0, size - radius)
+        ctx.lineTo(0, radius)
+        ctx.quadraticCurveTo(0, 0, radius, 0)
+        ctx.closePath()
+        ctx.clip()
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size)
+      }
       canvas.toBlob((blob) => {
         if (blob) resolve(blob)
         else reject(new Error('WebP encoding failed'))
