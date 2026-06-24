@@ -371,26 +371,32 @@ function extractIconSize(path: string): number {
   return 0
 }
 
-function generateTextIcon(letter: string, bgColor: string, size: number, isForeground: boolean): Promise<Blob> {
+function generateTextIcon(letter: string, bgColor: string, size: number, _isForeground: boolean): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
     canvas.width = size
     canvas.height = size
     const ctx = canvas.getContext('2d')!
     const half = size / 2
+    const radius = size * 0.22 // rounded corner radius
 
-    if (isForeground) {
-      // Foreground: circle on transparent background (device masks it)
-      ctx.clearRect(0, 0, size, size)
-      ctx.fillStyle = bgColor
-      ctx.beginPath()
-      ctx.arc(half, half, half - size * 0.04, 0, Math.PI * 2)
-      ctx.fill()
-    } else {
-      // Launcher icon: solid background (must fill entire square)
-      ctx.fillStyle = bgColor
-      ctx.fillRect(0, 0, size, size)
-    }
+    // Always: transparent → rounded rect → letter
+    ctx.clearRect(0, 0, size, size)
+
+    // Draw rounded rectangle
+    ctx.fillStyle = bgColor
+    ctx.beginPath()
+    ctx.moveTo(radius, 0)
+    ctx.lineTo(size - radius, 0)
+    ctx.quadraticCurveTo(size, 0, size, radius)
+    ctx.lineTo(size, size - radius)
+    ctx.quadraticCurveTo(size, size, size - radius, size)
+    ctx.lineTo(radius, size)
+    ctx.quadraticCurveTo(0, size, 0, size - radius)
+    ctx.lineTo(0, radius)
+    ctx.quadraticCurveTo(0, 0, radius, 0)
+    ctx.closePath()
+    ctx.fill()
 
     // Draw center letter
     ctx.fillStyle = '#FFFFFF'
@@ -407,7 +413,7 @@ function generateTextIcon(letter: string, bgColor: string, size: number, isForeg
   })
 }
 
-function resizeImage(dataUrl: string, size: number, isForeground: boolean): Promise<Blob> {
+function resizeImage(dataUrl: string, size: number, _isForeground: boolean): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
@@ -415,17 +421,26 @@ function resizeImage(dataUrl: string, size: number, isForeground: boolean): Prom
       canvas.width = size
       canvas.height = size
       const ctx = canvas.getContext('2d')!
+      const radius = size * 0.22
 
-      if (isForeground) {
-        // Foreground: circle with transparent corners
-        ctx.clearRect(0, 0, size, size)
-      } else {
-        // Launcher icon: fill entire square
-        ctx.fillStyle = '#FFFFFF'
-        ctx.fillRect(0, 0, size, size)
-      }
+      // Clear to transparent, draw rounded rect clip
+      ctx.clearRect(0, 0, size, size)
 
-      // Crop to square center, then resize
+      // Create rounded rectangle clipping path
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(size - radius, 0)
+      ctx.quadraticCurveTo(size, 0, size, radius)
+      ctx.lineTo(size, size - radius)
+      ctx.quadraticCurveTo(size, size, size - radius, size)
+      ctx.lineTo(radius, size)
+      ctx.quadraticCurveTo(0, size, 0, size - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.clip()
+
+      // Draw the image (clipped to rounded rect)
       const min = Math.min(img.width, img.height)
       const sx = (img.width - min) / 2
       const sy = (img.height - min) / 2
