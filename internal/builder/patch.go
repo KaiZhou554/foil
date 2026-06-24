@@ -53,12 +53,14 @@ func patchAXMLManifest(data []byte, pkgName, appName, verName string, verCode in
 		return nil, fmt.Errorf("set package: %w", err)
 	}
 
-	// NOTE: We ONLY change the manifest's `package` attribute.
-	// Activity/permission class names like .MainActivity and
-	// .DYNAMIC_RECEIVER... are compiled into classes.dex and CANNOT
-	// be changed without recompiling the Java source. They reference
-	// the original package and Android resolves them correctly as
-	// long as they're fully qualified in the manifest.
+	// Update permission name and provider authority so apps with different
+	// package names can be installed side-by-side (no provider conflict).
+	// These are string identifiers, NOT class references — safe to change.
+	// Activity names (MainActivity) are class references in DEX and stay unchanged.
+	_ = doc.SetString("com.kaizhou554.foilexample.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+		pkgName+".DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
+	_ = doc.SetString("com.kaizhou554.foilexample.androidx-startup",
+		pkgName+".androidx-startup")
 
 	// Version name — exact length match
 	if err := doc.SetString("1.0", verName); err != nil {
