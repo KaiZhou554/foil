@@ -1,8 +1,8 @@
 export default {
   app: {
     versionPrefix: '配置版本号：',
-    defaultAppName: "Let's config",
-    placeholderAppName: '[软件名]',
+    defaultAppName: 'Foil',
+    placeholderAppName: '[应用名]',
   },
   welcome: {
     title: '欢迎',

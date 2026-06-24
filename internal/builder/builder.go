@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -67,7 +68,17 @@ func (b *Builder) logf(format string, args ...interface{}) {
 // ── Pipeline steps ────────────────────────────────────────────────────────
 
 // Build runs the full pipeline end-to-end.
-func (b *Builder) Build(in BuildInput) (*BuildResult, error) {
+func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
+	// Catch panics and convert to errors for better debugging
+	defer func() {
+		if r := recover(); r != nil {
+			// Get stack trace
+			buf := make([]byte, 4096)
+			n := runtime.Stack(buf, false)
+			err = fmt.Errorf("PANIC: %v\nStack:\n%s", r, buf[:n])
+		}
+	}()
+
 	b.logBuf.Reset()
 	b.logf("=== Build started ===")
 	start := time.Now()

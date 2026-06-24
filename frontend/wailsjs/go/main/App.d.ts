@@ -3,7 +3,7 @@
 import {builder} from '../models';
 import {config} from '../models';
 
-export function BuildAPK(arg1:string,arg2:string,arg3:Record<string, Array<number>>):Promise<builder.BuildResult>;
+export function BuildAPK(arg1:string,arg2:string,arg3:Record<string, string>):Promise<builder.BuildResult>;
 
 export function GeneratePackageName(arg1:string):Promise<string>;
 
@@ -12,3 +12,7 @@ export function GetConfig():Promise<config.Config>;
 export function GetIconPaths():Promise<Array<string>>;
 
 export function SaveConfig(arg1:config.Config):Promise<void>;
+
+export function SelectDirectory():Promise<string>;
+
+export function SelectFile():Promise<string>;

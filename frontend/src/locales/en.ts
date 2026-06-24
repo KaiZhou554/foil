@@ -1,7 +1,7 @@
 export default {
   app: {
     versionPrefix: 'Configuration version: ',
-    defaultAppName: "Let's config",
+    defaultAppName: 'Foil',
     placeholderAppName: '[App Name]',
   },
   welcome: {

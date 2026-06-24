@@ -21,3 +21,11 @@ export function GetIconPaths() {
 export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }
+
+export function SelectDirectory() {
+  return window['go']['main']['App']['SelectDirectory']();
+}
+
+export function SelectFile() {
+  return window['go']['main']['App']['SelectFile']();
+}

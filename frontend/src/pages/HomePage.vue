@@ -1,97 +1,149 @@
 <template>
   <div class="h-full overflow-y-auto p-6">
     <!-- Header -->
-    <div class="mb-8">
+    <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-        Foil
+        极速打包
       </h1>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        HTML → APK 一键打包
-      </p>
     </div>
 
-    <!-- Build Form -->
-    <div class="max-w-2xl space-y-6">
-      <!-- Project Directory -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          HTML 项目目录
-        </label>
-        <div class="flex gap-2">
-          <input
-            v-model="projectDir"
-            type="text"
-            readonly
-            placeholder="选择包含 index.html 的文件夹..."
-            class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm cursor-pointer"
-            @click="selectDir"
+    <div class="max-w-2xl space-y-5">
+      <!-- HTML 项目来源 (Tabs) -->
+      <n-card title="HTML 项目来源" size="small">
+        <n-tabs type="line" animated default-value="folder" @update:value="onTabChange">
+          <!-- Tab 1: 文件夹路径 -->
+          <n-tab-pane name="folder" tab="文件夹">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <n-input
+                  v-model:value="projectPath"
+                  placeholder="粘贴文件夹路径，或点击右侧按钮选择..."
+                  clearable
+                  @keydown.enter="onPathEnter"
+                />
+                <n-button @click="selectDir" type="primary" ghost>
+                  浏览
+                </n-button>
+              </div>
+              <!-- Status tag -->
+              <div class="flex items-center gap-2">
+                <n-tag v-if="!projectPath" type="default" size="small">未选择</n-tag>
+                <n-tag v-else-if="isFolderSelected" type="success" size="small" round>
+                  <template #icon><n-icon :component="CheckmarkCircle24Regular" /></template>
+                  已选择 — 文件夹
+                </n-tag>
+              </div>
+            </div>
+          </n-tab-pane>
+
+          <!-- Tab 2: ZIP / HTML 文件 -->
+          <n-tab-pane name="file" tab="ZIP 或 HTML 文件">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <n-input
+                  v-model:value="filePath"
+                  placeholder="选择 .zip 或 .html 文件..."
+                  clearable
+                />
+                <n-button @click="selectFile" type="primary" ghost>
+                  选择文件
+                </n-button>
+              </div>
+              <div class="flex items-center gap-2">
+                <n-tag v-if="!filePath" type="default" size="small">未选择</n-tag>
+                <n-tag v-else-if="isZipSelected" type="success" size="small" round>
+                  <template #icon><n-icon :component="CheckmarkCircle24Regular" /></template>
+                  已选择 — ZIP 包
+                </n-tag>
+                <n-tag v-else-if="isHtmlSelected" type="success" size="small" round>
+                  <template #icon><n-icon :component="CheckmarkCircle24Regular" /></template>
+                  已选择 — HTML 文件
+                </n-tag>
+              </div>
+            </div>
+          </n-tab-pane>
+        </n-tabs>
+      </n-card>
+
+      <!-- 应用名称 -->
+      <n-card title="应用名称" size="small">
+        <n-input
+          v-model:value="appName"
+          placeholder="输入显示在手机上的应用名称"
+          maxlength="30"
+          :input-props="{ onInput: (e: Event) => { const t = (e.target as HTMLInputElement)?.value; if (t) previewPkg(); } }"
+        />
+      </n-card>
+
+      <!-- 图标上传 -->
+      <n-card title="应用图标" size="small">
+        <div class="flex items-center gap-4">
+          <!-- Preview: uploaded image or auto-generated letter -->
+          <img
+            v-if="customIconData"
+            :src="customIconData"
+            class="w-16 h-16 rounded-xl object-cover shadow-sm border border-gray-200 dark:border-gray-700 flex-shrink-0"
           />
-          <button
-            class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors"
-            @click="selectDir"
+          <div
+            v-else
+            class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-sm flex-shrink-0"
           >
-            选择
-          </button>
-        </div>
-      </div>
-
-      <!-- App Name -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          应用名称
-        </label>
-        <input
-          v-model="appName"
-          type="text"
-          placeholder="例如：我的应用"
-          class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm"
-          @input="onAppNameChange"
-        />
-      </div>
-
-      <!-- Auto-generated info -->
-      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-2">
-        <div class="flex justify-between text-sm">
-          <span class="text-gray-500 dark:text-gray-400">包名</span>
-          <span class="text-gray-700 dark:text-gray-300 font-mono text-xs">{{ autoPkgName }}</span>
-        </div>
-        <div class="flex justify-between text-sm">
-          <span class="text-gray-500 dark:text-gray-400">版本</span>
-          <span class="text-gray-700 dark:text-gray-300 font-mono text-xs">{{ autoVersionName }} ({{ autoVersionCode }})</span>
-        </div>
-      </div>
-
-      <!-- Icon Preview -->
-      <div v-if="iconPreviewUrl">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          自动生成图标预览
-        </label>
-        <img
-          :src="iconPreviewUrl"
-          alt="App Icon"
-          class="w-16 h-16 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
-        />
-      </div>
-
-      <!-- Advanced Toggle -->
-      <details class="text-sm">
-        <summary class="cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-          高级选项
-        </summary>
-        <div class="mt-3 space-y-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-          <div>
-            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">自定义包名（留空自动生成）</label>
+            {{ iconLetter }}
+          </div>
+          <div class="flex-1">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              上传一张图片自动处理为图标，不传则自动生成
+            </div>
             <input
-              v-model="customPkgName"
-              type="text"
-              placeholder="com.example.myapp"
-              class="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-xs font-mono"
+              ref="fileInputRef"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              @change="onIconFileSelected"
             />
+            <n-button size="small" @click="openIconPicker">选择图片</n-button>
+            <n-button v-if="customIconData" size="small" tertiary @click="clearIcon" class="ml-2">
+              清除
+            </n-button>
           </div>
         </div>
-      </details>
+      </n-card>
 
-      <!-- Generate Button -->
+      <!-- 高级选项 -->
+      <n-collapse>
+        <n-collapse-item title="高级选项 — 包名">
+          <div class="space-y-3">
+            <n-input-group>
+              <n-input
+                v-model:value="pkgSegment1"
+                placeholder="com"
+                :allow-input="onlyAllowPkg"
+                :style="{ width: '33%' }"
+                maxlength="20"
+              />
+              <n-input
+                v-model:value="pkgSegment2"
+                :placeholder="lastSeg2 || 'company'"
+                :allow-input="onlyAllowPkg"
+                :style="{ width: '33%' }"
+                maxlength="20"
+              />
+              <n-input
+                v-model:value="pkgSegment3"
+                placeholder="自动填充"
+                :allow-input="onlyAllowPkg"
+                :style="{ width: '33%' }"
+                maxlength="20"
+              />
+            </n-input-group>
+            <div class="text-xs text-gray-400 font-mono">
+              包名预览：{{ previewPkgName }}
+            </div>
+          </div>
+        </n-collapse-item>
+      </n-collapse>
+
+      <!-- 生成按钮 -->
       <button
         :disabled="!canBuild || building"
         class="w-full py-3 rounded-xl text-white font-semibold text-base transition-all duration-200"
@@ -110,18 +162,15 @@
         <span v-else>生成 APK</span>
       </button>
 
-      <!-- Progress / Log -->
+      <!-- 日志 -->
       <div v-if="buildLog" class="bg-black/5 dark:bg-white/5 rounded-lg p-3">
         <pre class="text-xs font-mono text-gray-600 dark:text-gray-400 whitespace-pre-wrap max-h-48 overflow-y-auto">{{ buildLog }}</pre>
       </div>
 
-      <!-- Result -->
-      <div
-        v-if="result"
-        class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm"
-      >
+      <!-- 结果 -->
+      <div v-if="result" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm">
         <p class="text-green-700 dark:text-green-300 font-medium">✓ APK 生成成功</p>
-        <p class="text-green-600 dark:text-green-400 mt-1 font-mono text-xs">{{ result.apkPath }}</p>
+        <p class="text-green-600 dark:text-green-400 mt-1 font-mono text-xs">{{ result.APKPath }}</p>
       </div>
 
       <div v-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-sm">
@@ -134,68 +183,115 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { BuildAPK, GetIconPaths, GeneratePackageName } from '../../wailsjs/go/main/App'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile } from '../../wailsjs/go/main/App'
+import { CheckmarkCircle24Regular } from '@vicons/fluent'
+import {
+  NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard,
+  NInputGroup, NCollapseItem, NCollapse,
+} from 'naive-ui'
 
-const projectDir = ref('')
+// ── State ──
+const inputTab = ref('folder')
+const projectPath = ref('')
+const filePath = ref('')
 const appName = ref('')
-const customPkgName = ref('')
-const autoVersionName = ref('')
-const autoVersionCode = ref('')
-const autoPkgName = ref('')
 const building = ref(false)
 const buildLog = ref('')
-const result = ref<{ apkPath: string; packageName: string; versionName: string; versionCode: number } | null>(null)
+const result = ref<{ APKPath: string; PackageName: string; VersionName: string; VersionCode: number } | null>(null)
 const error = ref('')
-const iconPreviewUrl = ref('')
 
-const canBuild = computed(() => projectDir.value && appName.value)
+// Package name segments
+const pkgSegment1 = ref('com')
+const pkgSegment2 = ref('')
+const pkgSegment3 = ref('')
+const lastSeg2 = ref('')
 
-function onAppNameChange() {
-  if (appName.value) {
-    // Generate package name for preview
-    GeneratePackageName(appName.value).then((pkg: string) => {
-      autoPkgName.value = pkg
-    })
-    generateIconPreview(appName.value)
-  }
+// Icon
+const fileInputRef = ref<HTMLInputElement>()
+const customIconData = ref<string | null>(null)
+const customIconFileName = ref('')
+
+// ── Computed ──
+const isFolderSelected = computed(() => !!projectPath.value)
+const isZipSelected = computed(() => !!filePath.value && filePath.value.toLowerCase().endsWith('.zip'))
+const isHtmlSelected = computed(() => !!filePath.value && (filePath.value.toLowerCase().endsWith('.html') || filePath.value.toLowerCase().endsWith('.htm')))
+
+const iconLetter = computed(() => {
+  if (customIconData.value) return ''
+  return appName.value ? appName.value.charAt(0).toUpperCase() : '?'
+})
+
+const canBuild = computed(() => {
+  if (building.value) return false
+  if (inputTab.value === 'folder') return !!projectPath.value && !!appName.value
+  return !!filePath.value && !!appName.value
+})
+
+const previewPkgName = computed(() => {
+  const seg1 = pkgSegment1.value || 'com'
+  const seg2 = pkgSegment2.value || 'app'
+  const seg3 = pkgSegment3.value || 'app'
+  return `${seg1}.${seg2}.${seg3}`
+})
+
+// ── Tab switch ──
+function onTabChange(name: string) {
+  inputTab.value = name
 }
 
-function generateIconPreview(name: string) {
-  if (!name) return
-  const canvas = document.createElement('canvas')
-  canvas.width = 192
-  canvas.height = 192
-  const ctx = canvas.getContext('2d')!
-  const letter = name.charAt(0).toUpperCase()
-
-  // Background
-  const colors = ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444']
-  const colorIndex = name.charCodeAt(0) % colors.length
-  ctx.fillStyle = colors[colorIndex]
-  ctx.beginPath()
-  ctx.arc(96, 96, 88, 0, Math.PI * 2)
-  ctx.fill()
-
-  // Letter
-  ctx.fillStyle = '#FFFFFF'
-  ctx.font = 'bold 96px system-ui, -apple-system, sans-serif'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(letter, 96, 98)
-
-  // Set preview
-  iconPreviewUrl.value = canvas.toDataURL('image/png')
-}
-
+// ── File / Folder dialogs ──
 async function selectDir() {
-  // In Wails, we can use the runtime dialog or a file input
-  // For now, use a prompt (Wails can expose a dialog via Go)
-  const dir = prompt('请输入 HTML 项目文件夹路径：')
+  const dir = await SelectDirectory()
   if (dir) {
-    projectDir.value = dir
+    projectPath.value = dir.replace(/^"(.*)"$/, '$1').trim()
   }
 }
 
+function onPathEnter() {
+  projectPath.value = projectPath.value.replace(/^"(.*)"$/, '$1').trim()
+}
+
+async function selectFile() {
+  const file = await SelectFile()
+  if (file) {
+    filePath.value = file
+  }
+}
+
+// ── Icon ──
+function openIconPicker() {
+  fileInputRef.value?.click()
+}
+
+function onIconFileSelected(e: Event) {
+  const input = e.target as HTMLInputElement
+  if (!input.files?.length) return
+  const file = input.files[0]
+  customIconFileName.value = file.name
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    customIconData.value = reader.result as string
+  }
+  reader.readAsDataURL(file)
+  input.value = ''
+}
+
+function clearIcon() {
+  customIconData.value = null
+  customIconFileName.value = ''
+}
+
+// ── Package name validation ──
+function onlyAllowPkg(value: string) {
+  return !value || /^[a-z0-9_.-]*$/.test(value)
+}
+
+function previewPkg() {
+  // preview is updated reactively via computed property
+}
+
+// ── Build ──
 async function buildAPK() {
   if (!canBuild.value || building.value) return
 
@@ -205,26 +301,56 @@ async function buildAPK() {
   error.value = ''
 
   try {
-    // Generate all icon sizes as WebP via canvas
-    const icons: Record<string, number[]> = {}
-    const iconPaths = await GetIconPaths()
-    const letter = appName.value.charAt(0).toUpperCase()
-    const colorIndex = appName.value.charCodeAt(0) % 7
-    const colors = ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444']
+    // Determine project directory
+    let projectDir = ''
+    if (inputTab.value === 'folder') {
+      projectDir = projectPath.value
+    } else {
+      // TODO: extract zip or use html file
+      buildLog.value += '文件模式暂未实现，请使用文件夹模式\n'
+      building.value = false
+      return
+    }
 
-    for (const iconPath of iconPaths) {
-      // Extract size from path (e.g., "mipmap-hdpi-v4/ic_launcher.webp" → 72)
-      const size = extractIconSize(iconPath)
-      if (size > 0) {
-        const blob = await generateWebPIcon(letter, colors[colorIndex], size)
-        const buf = await blob.arrayBuffer()
-        icons[iconPath] = Array.from(new Uint8Array(buf))
+    // Generate package name if not custom
+    const customPkg = pkgSegment3.value ? `${pkgSegment1.value}.${pkgSegment2.value}.${pkgSegment3.value}` : ''
+    if (customPkg) {
+      buildLog.value += `使用自定义包名: ${customPkg}\n`
+    }
+
+    // Generate icons as WebP
+    const icons: Record<string, string> = {}
+    const iconPaths = await GetIconPaths()
+
+    if (customIconData.value) {
+      // Uploaded image → resize to all icon sizes
+      for (const iconPath of iconPaths) {
+        const size = extractIconSize(iconPath)
+        if (size > 0) {
+          const blob = await resizeImage(customIconData.value, size, iconPath.includes('foreground'))
+          const b64 = await blobToBase64(blob)
+          icons[iconPath] = b64
+        }
+      }
+    } else {
+      // Auto-generated text icon
+      const letter = appName.value.charAt(0).toUpperCase()
+      const colors = ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444']
+      const colorIndex = appName.value.charCodeAt(0) % colors.length
+
+      for (const iconPath of iconPaths) {
+        const size = extractIconSize(iconPath)
+        if (size > 0) {
+          const blob = await generateTextIcon(letter, colors[colorIndex], size, iconPath.includes('foreground'))
+          const b64 = await blobToBase64(blob)
+          icons[iconPath] = b64
+        }
       }
     }
 
     buildLog.value += '正在构建 APK...\n'
-    const res = await BuildAPK(projectDir.value, appName.value, icons)
-    result.value = { apkPath: res.APKPath, packageName: res.PackageName, versionName: res.VersionName, versionCode: res.VersionCode }
+    const res = await BuildAPK(projectDir, appName.value, icons)
+    result.value = { APKPath: res.APKPath, PackageName: res.PackageName, VersionName: res.VersionName, VersionCode: res.VersionCode }
     buildLog.value += res.Log || ''
   } catch (err: any) {
     error.value = String(err?.message || err || '未知错误')
@@ -233,27 +359,19 @@ async function buildAPK() {
   }
 }
 
+// ── Icon generation helpers ──
+
 function extractIconSize(path: string): number {
-  const sizes: Record<string, number> = {
-    'mdpi': 48,
-    'hdpi': 72,
-    'xhdpi': 96,
-    'xxhdpi': 144,
-    'xxxhdpi': 192,
-  }
+  const sizes: Record<string, number> = { mdpi: 48, hdpi: 72, xhdpi: 96, xxhdpi: 144, xxxhdpi: 192 }
   for (const [key, size] of Object.entries(sizes)) {
     if (path.includes(key)) {
-      // Foreground icons are 1.5x or 2.25x larger depending on density
-      if (path.includes('foreground')) {
-        return Math.round(size * (108 / 48))
-      }
-      return size
+      return path.includes('foreground') ? Math.round(size * (108 / 48)) : size
     }
   }
   return 0
 }
 
-function generateWebPIcon(letter: string, bgColor: string, size: number): Promise<Blob> {
+function generateTextIcon(letter: string, bgColor: string, size: number, isForeground: boolean): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
     canvas.width = size
@@ -261,13 +379,20 @@ function generateWebPIcon(letter: string, bgColor: string, size: number): Promis
     const ctx = canvas.getContext('2d')!
     const half = size / 2
 
-    // Draw circle background
-    ctx.fillStyle = bgColor
-    ctx.beginPath()
-    ctx.arc(half, half, half - size * 0.04, 0, Math.PI * 2)
-    ctx.fill()
+    if (isForeground) {
+      // Foreground: circle on transparent background (device masks it)
+      ctx.clearRect(0, 0, size, size)
+      ctx.fillStyle = bgColor
+      ctx.beginPath()
+      ctx.arc(half, half, half - size * 0.04, 0, Math.PI * 2)
+      ctx.fill()
+    } else {
+      // Launcher icon: solid background (must fill entire square)
+      ctx.fillStyle = bgColor
+      ctx.fillRect(0, 0, size, size)
+    }
 
-    // Draw letter
+    // Draw center letter
     ctx.fillStyle = '#FFFFFF'
     const fontSize = Math.round(size * 0.5)
     ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`
@@ -275,11 +400,57 @@ function generateWebPIcon(letter: string, bgColor: string, size: number): Promis
     ctx.textBaseline = 'middle'
     ctx.fillText(letter, half, half + 1)
 
-    // Encode as WebP
     canvas.toBlob((blob) => {
       if (blob) resolve(blob)
-      else reject(new Error('Failed to encode WebP'))
+      else reject(new Error('WebP encoding failed'))
     }, 'image/webp', 0.9)
+  })
+}
+
+function resizeImage(dataUrl: string, size: number, isForeground: boolean): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')!
+
+      if (isForeground) {
+        // Foreground: circle with transparent corners
+        ctx.clearRect(0, 0, size, size)
+      } else {
+        // Launcher icon: fill entire square
+        ctx.fillStyle = '#FFFFFF'
+        ctx.fillRect(0, 0, size, size)
+      }
+
+      // Crop to square center, then resize
+      const min = Math.min(img.width, img.height)
+      const sx = (img.width - min) / 2
+      const sy = (img.height - min) / 2
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size)
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob)
+        else reject(new Error('WebP encoding failed'))
+      }, 'image/webp', 0.9)
+    }
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = dataUrl
+  })
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      // Strip the data:...;base64, prefix
+      const comma = result.indexOf(',')
+      resolve(comma >= 0 ? result.substring(comma + 1) : result)
+    }
+    reader.onerror = () => reject(new Error('Failed to read blob'))
+    reader.readAsDataURL(blob)
   })
 }
 </script>

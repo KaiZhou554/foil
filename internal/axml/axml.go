@@ -89,10 +89,21 @@ func parseStringPool(fileData []byte, chunkOff int) (*stringPool, error) {
 		// First 2 bytes = character count
 		charCount := binary.LittleEndian.Uint16(fileData[entryStart:])
 
+		// Validate the whole string fits within the data
+		if entryStart+2+int(charCount)*2 > len(fileData) {
+			// Skip entries that extend beyond the file
+			sp.entries[i] = poolEntry{
+				index:     i,
+				charCount: 0,
+				offset:    0,
+			}
+			continue
+		}
+
 		sp.entries[i] = poolEntry{
-			index:  i,
+			index:     i,
 			charCount: charCount,
-			offset: entryStart + 2, // point to actual character data, skip charCount
+			offset:    entryStart + 2, // point to actual character data, skip charCount
 		}
 	}
 
@@ -105,12 +116,18 @@ func (d *Document) StringAt(idx int) string {
 		return ""
 	}
 	e := d.pool.entries[idx]
+	if e.charCount == 0 || e.offset+int(e.charCount)*2 > len(d.raw) {
+		return ""
+	}
 	return decodeUTF16Slice(d.raw[e.offset : e.offset+int(e.charCount)*2])
 }
 
 // FindString returns the pool index of a string, or -1 if not found.
 func (d *Document) FindString(s string) int {
 	for i, e := range d.pool.entries {
+		if e.charCount == 0 || e.offset+int(e.charCount)*2 > len(d.raw) {
+			continue
+		}
 		decoded := decodeUTF16Slice(d.raw[e.offset : e.offset+int(e.charCount)*2])
 		if decoded == s {
 			return i
@@ -135,6 +152,9 @@ func (d *Document) SetString(oldValue, newValue string) error {
 	if newChars != oldChars {
 		return fmt.Errorf("new value %q (%d chars) != old %q (%d chars)",
 			newValue, newChars, oldValue, oldChars)
+	}
+	if e.offset+oldChars*2 > len(d.raw) {
+		return fmt.Errorf("string data extends beyond file bounds")
 	}
 
 	// Write UTF-16LE character data starting at e.offset
@@ -210,7 +230,8 @@ func decodeUTF16Slice(b []byte) string {
 }
 
 func writeUTF16At(dst []byte, s string) {
-	for i, r := range s {
+	runes := []rune(s)
+	for i, r := range runes {
 		if i*2+1 < len(dst) {
 			dst[i*2] = byte(r)
 			dst[i*2+1] = byte(r >> 8)
