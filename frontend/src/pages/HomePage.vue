@@ -375,7 +375,11 @@ async function buildAPK() {
   } catch (err: any) {
     const msg = String(err?.message || err || '')
     buildLog.value += msg + '\n'
-    message.error(t('buildPage.failTitle'), { duration: 5000, keepAliveOnHover: true })
+    // Map common errors to localized messages
+    const errHint = msg.includes('index.html')
+      ? t('buildPage.errorNoIndex')
+      : t('buildPage.errorGeneric')
+    message.error(t('buildPage.failTitle') + '\n' + errHint, { duration: 5000, keepAliveOnHover: true })
   } finally {
     building.value = false
   }

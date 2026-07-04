@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -154,7 +155,28 @@ func (a *App) PrepareFileInput(filePath string) (string, error) {
 				return "", fmt.Errorf("write %s: %w", f.Name, err)
 			}
 		}
-		return tmpDir, nil
+		// Walk the extracted tree to find the first index.html,
+		// then use its parent directory as the project root.
+		// This handles ZIPs where files are nested in subdirectories
+		// (e.g. "project-v1/src/index.html").
+		projectDir := tmpDir
+		found := false
+		filepath.WalkDir(tmpDir, func(path string, d fs.DirEntry, err error) error {
+			if err != nil || d.IsDir() {
+				return nil
+			}
+			if strings.EqualFold(d.Name(), "index.html") {
+				projectDir = filepath.Dir(path)
+				found = true
+				return filepath.SkipAll
+			}
+			return nil
+		})
+		if !found {
+			os.RemoveAll(tmpDir)
+			return "", fmt.Errorf("no index.html found in archive")
+		}
+		return projectDir, nil
 	}
 
 	return "", fmt.Errorf("unsupported file type: %s", filePath)

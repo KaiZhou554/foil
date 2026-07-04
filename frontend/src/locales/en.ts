@@ -77,6 +77,8 @@ export default {
 
     successTitle: 'APK Built',
     failTitle: 'Build Failed',
+    errorNoIndex: 'No index.html found in the archive',
+    errorGeneric: 'Please check your input and try again',
 
     logCustomPkg: 'Using custom package: ',
     logBuilding: 'Building APK...\n',

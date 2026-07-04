@@ -77,6 +77,8 @@ export default {
 
     successTitle: 'APK 已生成',
     failTitle: '无法生成',
+    errorNoIndex: '压缩包内未找到 index.html',
+    errorGeneric: '请检查输入后重试',
 
     logCustomPkg: '使用自定义包名：',
     logBuilding: '正在生成 APK...\n',
