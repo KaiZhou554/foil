@@ -296,7 +296,8 @@ function clearIcon() {
 
 // ── Package name validation ──
 function onlyAllowPkg(value: string) {
-  return !value || /^[a-z0-9_.-]*$/.test(value)
+  // Each segment must start with a letter (a-z)
+  return !value || /^[a-z][a-z0-9_.-]*$/.test(value)
 }
 
 function onlyAllowVersion(value: string) {

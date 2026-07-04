@@ -100,6 +100,8 @@ func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
 	pkgName := in.PackageName
 	if pkgName == "" {
 		pkgName = GeneratePackageName(in.AppName, nil, oldPkgLen)
+	} else if !isValidPackageName(pkgName) {
+		return nil, b.fail("validation", fmt.Errorf("package name %q is invalid — each segment must start with a letter and contain only letters, digits, underscores or hyphens", pkgName))
 	}
 	verName := in.VersionName
 	if verName == "" {

@@ -132,3 +132,36 @@ func isValidVersionName(v string) bool {
 	}
 	return true
 }
+
+// isValidPackageName checks that a fully-qualified package name (e.g.
+// "com.example.app") is valid per Android rules:
+//   - each segment starts with a letter
+//   - each segment contains only letters, digits, or underscores
+//   - at least two segments
+func isValidPackageName(pkg string) bool {
+	if pkg == "" {
+		return true
+	}
+	segments := strings.Split(pkg, ".")
+	if len(segments) < 2 {
+		return false
+	}
+	for _, seg := range segments {
+		if len(seg) == 0 {
+			return false
+		}
+		for i, r := range seg {
+			if i == 0 && (r < 'a' || r > 'z') {
+				return false // must start with lowercase letter
+			}
+			if i > 0 && !isValidPkgChar(r) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func isValidPkgChar(r rune) bool {
+	return (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_'
+}
