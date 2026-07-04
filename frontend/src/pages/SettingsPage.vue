@@ -62,6 +62,22 @@
         </div>
       </div>
     </section>
+
+    <!-- About -->
+    <section class="mb-8">
+      <h2 class="text-lg font-medium text-neutral-800 dark:text-neutral-100 mb-3">
+        {{ t('settings.about') }}
+      </h2>
+      <div class="bg-white dark:bg-neutral-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="text-sm text-neutral-500 leading-relaxed">
+            <strong class="text-neutral-700 dark:text-neutral-200">Foil</strong> · KaiZhou554 · v0.1.4<br>
+            {{ t('settings.aboutDesc') }}
+          </div>
+          <GitHubButton class="shrink-0" />
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -71,6 +87,7 @@ import { useI18n } from 'vue-i18n'
 import { NSelect, NRadio, NRadioGroup, NInput, NButton, NSwitch, NCollapseTransition } from 'naive-ui'
 import { useAppStore } from '@/stores/appStore'
 import { SelectOutputDir } from '../../wailsjs/go/main/App'
+import GitHubButton from '@/components/GitHubButton.vue'
 
 const { t, locale } = useI18n()
 const appStore = useAppStore()

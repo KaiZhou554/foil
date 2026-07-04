@@ -1,6 +1,6 @@
-[English](README.md) | 简体中文
-
 # Foil
+
+[English](README.md) | 简体中文
 
 从任意 HTML 项目构建自定义 Android APK 的桌面应用。基于 Go + Wails2。
 

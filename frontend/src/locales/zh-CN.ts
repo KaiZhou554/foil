@@ -32,6 +32,8 @@ export default {
     btnBrowse: '浏览…',
     showFloatButton: '显示日志',
     openAfterBuild: '构建后打开文件夹',
+    about: '关于',
+    aboutDesc: '从任意 HTML 项目构建 Android APK 的桌面应用。',
   },
 
   titlebar: {

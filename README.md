@@ -1,6 +1,6 @@
-English | [简体中文](README_zh.md)
-
 # Foil
+
+English | [简体中文](README_zh.md)
 
 A desktop app for building custom Android APK files from any HTML project. Built with Go + Wails2.
 
