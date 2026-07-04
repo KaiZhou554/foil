@@ -33,3 +33,7 @@ export function SelectDirectory() {
 export function SelectFile() {
   return window['go']['main']['App']['SelectFile']();
 }
+
+export function SelectOutputDir() {
+  return window['go']['main']['App']['SelectOutputDir']();
+}

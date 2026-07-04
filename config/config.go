@@ -9,6 +9,7 @@ type Config struct {
 	Version     string        `toml:"version"      json:"version"`
 	FirstLaunch bool          `toml:"firstLaunch"  json:"firstLaunch"`
 	Language    string        `toml:"language"     json:"language"`
+	OutputDir   string        `toml:"outputDir"    json:"outputDir"`
 	General     GeneralConfig `toml:"general"      json:"general"`
 	Privacy     PrivacyConfig `toml:"privacy"      json:"privacy"`
 }
@@ -107,6 +108,7 @@ func DefaultConfig() *Config {
 		Version:     "0.1.0",
 		FirstLaunch: true,
 		Language:    "zh-CN",
+		OutputDir:   "",
 		General: GeneralConfig{
 			AutoStart:      false,
 			Notifications:  true,

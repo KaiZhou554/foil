@@ -177,6 +177,7 @@ export namespace config {
 	    version: string;
 	    firstLaunch: boolean;
 	    language: string;
+	    outputDir: string;
 	    general: GeneralConfig;
 	    privacy: PrivacyConfig;
 	
@@ -189,6 +190,7 @@ export namespace config {
 	        this.version = source["version"];
 	        this.firstLaunch = source["firstLaunch"];
 	        this.language = source["language"];
+	        this.outputDir = source["outputDir"];
 	        this.general = this.convertValues(source["general"], GeneralConfig);
 	        this.privacy = this.convertValues(source["privacy"], PrivacyConfig);
 	    }

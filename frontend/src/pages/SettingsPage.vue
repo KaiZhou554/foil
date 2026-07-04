@@ -4,7 +4,7 @@
       {{ t('settings.title') }}
     </h1>
 
-    <!-- Language Section -->
+    <!-- Language -->
     <section class="mb-8">
       <h2 class="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">
         {{ t('settings.language') }}
@@ -20,59 +20,50 @@
       </div>
     </section>
 
-    <!-- General settings -->
+    <!-- General -->
     <section class="mb-8">
       <h2 class="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">
         {{ t('settings.general') }}
       </h2>
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 divide-y divide-gray-100 dark:divide-gray-700/50">
-        <div class="flex items-center justify-between px-4 py-3">
-          <span class="text-gray-700 dark:text-gray-200">{{ t('settings.autoLaunch') }}</span>
-          <n-switch :value="appStore.generalSettings.autoStart" @update:value="val => { appStore.generalSettings.autoStart = val; appStore.saveConfig() }" />
-        </div>
-        <div class="flex items-center justify-between px-4 py-3">
-          <span class="text-gray-700 dark:text-gray-200">{{ t('settings.notifications') }}</span>
-          <n-switch :value="appStore.generalSettings.notifications" @update:value="val => { appStore.generalSettings.notifications = val; appStore.saveConfig() }" />
-        </div>
-        <div class="flex items-center justify-between px-4 py-3">
-          <span class="text-gray-700 dark:text-gray-200">{{ t('settings.minimizeToTray') }}</span>
-          <n-switch :value="appStore.generalSettings.minimizeToTray" @update:value="val => { appStore.generalSettings.minimizeToTray = val; appStore.saveConfig() }" />
-        </div>
-      </div>
-    </section>
-
-    <!-- System Permissions -->
-    <section class="mb-8">
-      <h2 class="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">
-        {{ t('settings.systemPermissions') }}
-      </h2>
       <div class="bg-white dark:bg-gray-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4">
-        <button @click="goToPrivacy" class="w-full flex items-center justify-between text-left
-                 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50
-                 rounded-full px-3 py-2 transition-colors">
-          <div class="flex items-center gap-3">
-            <span>{{ t('settings.managePermissions') }}</span>
+        <div class="flex items-center justify-between gap-4">
+          <span class="text-sm text-gray-700 dark:text-gray-200 shrink-0">{{ t('settings.saveLocation') }}</span>
+          <n-radio-group :value="localMode" @update:value="onLocationModeChange">
+            <n-radio value="desktop" class="mr-3">
+              <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.locationDesktop') }}</span>
+            </n-radio>
+            <n-radio value="custom">
+              <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.locationCustom') }}</span>
+            </n-radio>
+          </n-radio-group>
+        </div>
+        <n-collapse-transition :show="localMode === 'custom'">
+          <div class="flex items-center gap-2 pt-2">
+            <n-input
+              :value="customPath"
+              :placeholder="t('settings.locationPlaceholder')"
+              readonly
+              class="flex-1"
+              size="small"
+            />
+            <n-button size="small" type="primary" ghost @click="pickCustomPath">
+              {{ t('settings.btnBrowse') }}
+            </n-button>
           </div>
-          <Icon class="text-gray-400">
-            <ChevronRight20Regular />
-          </Icon>
-        </button>
+        </n-collapse-transition>
       </div>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NSwitch, NSelect } from 'naive-ui'
-import { Icon } from '@vicons/utils'
-import ChevronRight20Regular from '@vicons/fluent/es/ChevronRight20Regular'
+import { NSelect, NRadio, NRadioGroup, NInput, NButton, NCollapseTransition } from 'naive-ui'
 import { useAppStore } from '@/stores/appStore'
+import { SelectOutputDir } from '../../wailsjs/go/main/App'
 
-const { t, locale } = useI18n()
-const router = useRouter()
+const { t } = useI18n()
 const appStore = useAppStore()
 
 const languageOptions = [
@@ -80,14 +71,31 @@ const languageOptions = [
   { value: 'en', label: 'English' },
 ]
 
+// ── Location state ──
+const customPath = ref('')
+const localMode = ref<'desktop' | 'custom'>(appStore.outputDir ? 'custom' : 'desktop')
+
+function onLocationModeChange(val: string) {
+  localMode.value = val as 'desktop' | 'custom'
+  if (val === 'desktop') {
+    customPath.value = ''
+    appStore.outputDir = ''
+    appStore.saveConfig()
+  }
+}
+
+async function pickCustomPath() {
+  const dir = await SelectOutputDir()
+  if (dir) {
+    customPath.value = dir
+    appStore.outputDir = dir
+    appStore.saveConfig()
+  }
+}
+
 function switchLanguage(value: string) {
   const lang = value as 'zh-CN' | 'en'
   appStore.setLanguage(lang)
-  locale.value = lang
   appStore.saveConfig()
-}
-
-function goToPrivacy() {
-  router.push({ name: 'settings-privacy' })
 }
 </script>

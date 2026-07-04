@@ -32,8 +32,8 @@
           />
         </div>
 
-        <!-- Get started button -->
-        <BubbleButton @click="goToSetup">
+        <!-- Get started button (goes directly to homepage) -->
+        <BubbleButton @click="goToHome">
           {{ t('welcome.getStarted') }}
         </BubbleButton>
       </div>
@@ -64,9 +64,8 @@ function selectLanguage(value: string) {
   appStore.saveConfig()
 }
 
-function goToSetup() {
-  router.push('/setup')
+async function goToHome() {
+  await appStore.completeOnboarding()
+  router.push('/main/home')
 }
 </script>
-
-

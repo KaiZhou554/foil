@@ -30,7 +30,7 @@ func NewApp(cfg *config.Manager) *App {
 		Config: cfg,
 		Builder: builder.New(
 			filepath.Join(AssetsDir(), "foil-example.apk"), // template APK
-			filepath.Join(os.Getenv("USERPROFILE"), "Desktop"), // default output: desktop
+			DesktopPath(), // default output: real Desktop
 			filepath.Join(appData, "keys"),
 			filepath.Join(appData, "builds"),
 		),
@@ -47,6 +47,17 @@ func (a *App) startup(ctx context.Context) {
 func (a *App) SelectDirectory() string {
 	dir, err := wailsRuntime.OpenDirectoryDialog(a.ctx, wailsRuntime.OpenDialogOptions{
 		Title: "选择 HTML 项目文件夹",
+	})
+	if err != nil || dir == "" {
+		return ""
+	}
+	return dir
+}
+
+// SelectOutputDir opens a native folder picker for the APK output directory.
+func (a *App) SelectOutputDir() string {
+	dir, err := wailsRuntime.OpenDirectoryDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+		Title: "选择 APK 输出目录",
 	})
 	if err != nil || dir == "" {
 		return ""
@@ -195,6 +206,10 @@ func (a *App) GetConfig() (*config.Config, error) {
 func (a *App) SaveConfig(cfg config.Config) error {
 	return a.Config.Update(func(c *config.Config) error {
 		*c = cfg
+		// Sync output directory to builder
+		if cfg.OutputDir != "" {
+			a.Builder.OutputDir = cfg.OutputDir
+		}
 		return nil
 	})
 }
