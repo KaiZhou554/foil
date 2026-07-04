@@ -104,6 +104,8 @@ func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
 	verName := in.VersionName
 	if verName == "" {
 		verName = GenerateVersionName()
+	} else if !isValidVersionName(verName) {
+		return nil, b.fail("validation", fmt.Errorf("version name %q contains invalid characters — only digits and dots allowed (e.g. 1.0, 2.3.1)", verName))
 	}
 	verCode := GenerateVersionCode()
 	b.logf("Package: %s (%d chars) | Version: %s (%d)", pkgName, len(pkgName), verName, verCode)

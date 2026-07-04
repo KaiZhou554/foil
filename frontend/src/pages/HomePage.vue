@@ -140,11 +140,11 @@
               包名预览：{{ previewPkgName }}
             </div>
             <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1">自定义版本号（纯数字，留空自动生成）</label>
+              <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1">自定义版本号（留空自动生成，支持 1.0 / 2.3.1 格式）</label>
               <n-input
                 v-model:value="versionName"
-                placeholder="例如 7 或 20240701"
-                :allow-input="onlyAllowDigits"
+                placeholder="例如 7 或 2.3.1"
+                :allow-input="onlyAllowVersion"
                 maxlength="20"
               />
             </div>
@@ -299,8 +299,9 @@ function onlyAllowPkg(value: string) {
   return !value || /^[a-z0-9_.-]*$/.test(value)
 }
 
-function onlyAllowDigits(value: string) {
-  return !value || /^\d*$/.test(value)
+function onlyAllowVersion(value: string) {
+  // Allow digits and dots, prevent consecutive/multiple dots
+  return !value || /^\d*(\.?\d*)?$/.test(value)
 }
 
 function previewPkg() {
@@ -365,7 +366,7 @@ async function buildAPK() {
     }
 
     buildLog.value += '正在构建 APK...\n'
-    const res = await BuildAPK(projectDir, appName.value, versionName.value, icons)
+    const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value, icons)
     result.value = { APKPath: res.APKPath, PackageName: res.PackageName, VersionName: res.VersionName, VersionCode: res.VersionCode }
     buildLog.value += res.Log || ''
   } catch (err: any) {

@@ -3,7 +3,7 @@
 import {builder} from '../models';
 import {config} from '../models';
 
-export function BuildAPK(arg1:string,arg2:string,arg3:string,arg4:Record<string, string>):Promise<builder.BuildResult>;
+export function BuildAPK(arg1:string,arg2:string,arg3:string,arg4:string,arg5:Record<string, string>):Promise<builder.BuildResult>;
 
 export function GeneratePackageName(arg1:string):Promise<string>;
 

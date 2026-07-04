@@ -118,3 +118,17 @@ func GenerateVersionCode() int32 {
 	fmt.Sscanf(s, "%d", &val)
 	return int32(val % 1000000000)
 }
+
+// isValidVersionName checks that a version name contains only digits and dots
+// (e.g. "1", "1.0", "2.3.1"). Empty string is allowed (triggers auto-generation).
+func isValidVersionName(v string) bool {
+	if v == "" {
+		return true
+	}
+	for _, r := range v {
+		if r != '.' && (r < '0' || r > '9') {
+			return false
+		}
+	}
+	return true
+}
