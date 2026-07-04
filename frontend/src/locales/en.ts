@@ -112,7 +112,6 @@ export default {
     successTitle: '✓ APK built successfully',
     failTitle: '✗ Build failed',
     logCustomPkg: 'Using custom package: ',
-    logFileModeNotImpl: 'File mode not yet implemented, please use Folder mode\n',
     logBuilding: 'Building APK...\n',
   },
 }

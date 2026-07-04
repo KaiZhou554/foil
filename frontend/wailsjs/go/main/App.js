@@ -18,6 +18,10 @@ export function GetIconPaths() {
   return window['go']['main']['App']['GetIconPaths']();
 }
 
+export function PrepareFileInput(arg1) {
+  return window['go']['main']['App']['PrepareFileInput'](arg1);
+}
+
 export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }

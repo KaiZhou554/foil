@@ -112,7 +112,6 @@ export default {
     successTitle: '✓ APK 生成成功',
     failTitle: '✗ 生成失败',
     logCustomPkg: '使用自定义包名：',
-    logFileModeNotImpl: '文件模式暂未实现，请使用文件夹模式\n',
     logBuilding: '正在构建 APK...\n',
   },
 }

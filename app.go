@@ -1,11 +1,14 @@
 package main
 
 import (
+	"archive/zip"
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"lets_config/config"
 	"lets_config/internal/builder"
@@ -65,6 +68,86 @@ func (a *App) SelectFile() string {
 	return file
 }
 
+// TempDirBase returns the base directory for temporary files:
+// %TEMP%\unieditdept\foil\
+func TempDirBase() string {
+	return filepath.Join(os.TempDir(), "unieditdept", "foil")
+}
+
+// PrepareFileInput converts a file path (.html or .zip) into a usable
+// project directory. For .html it copies the file as index.html in a temp
+// dir; for .zip it extracts to a temp directory.
+func (a *App) PrepareFileInput(filePath string) (string, error) {
+	base := TempDirBase()
+	os.MkdirAll(base, 0755) // ensure base dir exists
+	lower := strings.ToLower(filePath)
+
+	if strings.HasSuffix(lower, ".html") || strings.HasSuffix(lower, ".htm") {
+		tmpDir, err := os.MkdirTemp(base, "html-*")
+		if err != nil {
+			return "", fmt.Errorf("create temp dir: %w", err)
+		}
+		dest := filepath.Join(tmpDir, "index.html")
+		src, err := os.Open(filePath)
+		if err != nil {
+			os.RemoveAll(tmpDir)
+			return "", fmt.Errorf("open html: %w", err)
+		}
+		defer src.Close()
+		out, err := os.Create(dest)
+		if err != nil {
+			os.RemoveAll(tmpDir)
+			return "", fmt.Errorf("create index.html: %w", err)
+		}
+		defer out.Close()
+		if _, err := io.Copy(out, src); err != nil {
+			os.RemoveAll(tmpDir)
+			return "", fmt.Errorf("copy html: %w", err)
+		}
+		return tmpDir, nil
+	}
+
+	if strings.HasSuffix(lower, ".zip") {
+		tmpDir, err := os.MkdirTemp(base, "zip-*")
+		if err != nil {
+			return "", fmt.Errorf("create temp dir: %w", err)
+		}
+		r, err := zip.OpenReader(filePath)
+		if err != nil {
+			os.RemoveAll(tmpDir)
+			return "", fmt.Errorf("open zip: %w", err)
+		}
+		defer r.Close()
+
+		for _, f := range r.File {
+			fpath := filepath.Join(tmpDir, f.Name)
+			if f.FileInfo().IsDir() {
+				os.MkdirAll(fpath, 0755)
+				continue
+			}
+			os.MkdirAll(filepath.Dir(fpath), 0755)
+			rc, err := f.Open()
+			if err != nil {
+				return "", fmt.Errorf("open %s: %w", f.Name, err)
+			}
+			out, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				rc.Close()
+				return "", fmt.Errorf("create %s: %w", fpath, err)
+			}
+			_, err = io.Copy(out, rc)
+			rc.Close()
+			out.Close()
+			if err != nil {
+				return "", fmt.Errorf("write %s: %w", f.Name, err)
+			}
+		}
+		return tmpDir, nil
+	}
+
+	return "", fmt.Errorf("unsupported file type: %s", filePath)
+}
+
 // BuildAPK runs the full build pipeline. Called from frontend via Wails bind.
 // projectDir: path to HTML project folder.
 // appName: user-visible app name.
@@ -79,6 +162,10 @@ func (a *App) BuildAPK(projectDir, appName, packageName, versionName string, ico
 			return nil, fmt.Errorf("icon %s: %w", path, err)
 		}
 		icons[path] = data
+	}
+	// Track temp dirs from PrepareFileInput for automatic cleanup
+	if strings.HasPrefix(projectDir, TempDirBase()) {
+		a.Builder.TrackTempDir(projectDir)
 	}
 	return a.Builder.Build(builder.BuildInput{
 		ProjectDir:  projectDir,

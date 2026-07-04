@@ -183,7 +183,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile } from '../../wailsjs/go/main/App'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput } from '../../wailsjs/go/main/App'
 import { CheckmarkCircle24Regular } from '@vicons/fluent'
 import {
   NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard,
@@ -323,9 +323,7 @@ async function buildAPK() {
     if (inputTab.value === 'folder') {
       projectDir = projectPath.value
     } else {
-      buildLog.value += t('buildPage.logFileModeNotImpl')
-      building.value = false
-      return
+      projectDir = await PrepareFileInput(filePath.value)
     }
 
     const customPkg = pkgSegment3.value ? `${pkgSegment1.value}.${pkgSegment2.value}.${pkgSegment3.value}` : ''

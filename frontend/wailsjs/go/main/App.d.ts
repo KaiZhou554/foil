@@ -11,6 +11,8 @@ export function GetConfig():Promise<config.Config>;
 
 export function GetIconPaths():Promise<Array<string>>;
 
+export function PrepareFileInput(arg1:string):Promise<string>;
+
 export function SaveConfig(arg1:config.Config):Promise<void>;
 
 export function SelectDirectory():Promise<string>;

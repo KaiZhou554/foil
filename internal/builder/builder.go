@@ -45,8 +45,9 @@ type Builder struct {
 
 	KeepWorkDir bool // set true to keep temp files for debugging
 
-	logBuf bytes.Buffer
-	logger *log.Logger
+	tempDirs []string   // extra temp dirs to clean up (e.g. from PrepareFileInput)
+	logBuf   bytes.Buffer
+	logger   *log.Logger
 }
 
 // New creates a Builder with default paths.
@@ -59,6 +60,21 @@ func New(templatePath, outputDir, keysDir, workDir string) *Builder {
 	}
 	b.logger = log.New(&b.logBuf, "", log.Ltime|log.Lshortfile)
 	return b
+}
+
+// TrackTempDir registers a directory for cleanup when Build finishes.
+func (b *Builder) TrackTempDir(dir string) {
+	b.tempDirs = append(b.tempDirs, dir)
+}
+
+// cleanupTempDirs removes all tracked temporary directories.
+func (b *Builder) cleanupTempDirs() {
+	for _, dir := range b.tempDirs {
+		if err := os.RemoveAll(dir); err != nil {
+			b.logf("cleanup temp dir %s: %v", dir, err)
+		}
+	}
+	b.tempDirs = nil
 }
 
 func (b *Builder) logf(format string, args ...interface{}) {
@@ -152,6 +168,7 @@ func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
 	if !b.KeepWorkDir {
 		os.RemoveAll(taskDir)
 	}
+	b.cleanupTempDirs()
 
 	elapsed := time.Since(start)
 	b.logf("=== Build complete in %v ===", elapsed)
