@@ -115,9 +115,9 @@ func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
 		return nil, b.fail("inject-frontend", err)
 	}
 
-	// 6. Patch all strings in binary files (AXML, resources.arsc, etc.)
-	if err := patchAllStrings(unpackDir, pkgName, in.AppName, verName, verCode); err != nil {
-		return nil, b.fail("patch-strings", err)
+	// 6. Patch manifest & resources via apktool decode/edit/rebuild
+	if err := apktoolPatchManifest(unpackDir, b.TemplatePath, pkgName, in.AppName, verName, verCode); err != nil {
+		return nil, b.fail("patch-manifest", err)
 	}
 
 	// 7. Place icons

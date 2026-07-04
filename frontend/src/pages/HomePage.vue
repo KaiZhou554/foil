@@ -82,11 +82,11 @@
           <img
             v-if="customIconData"
             :src="customIconData"
-            class="w-16 h-16 rounded-xl object-cover shadow-sm border border-gray-200 dark:border-gray-700 flex-shrink-0"
+            class="w-16 h-16 rounded-xl object-cover shadow-sm border border-gray-200 dark:border-gray-700 shrink-0"
           />
           <div
             v-else
-            class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-sm flex-shrink-0"
+            class="w-16 h-16 rounded-xl bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-sm shrink-0"
           >
             {{ iconLetter }}
           </div>
@@ -148,7 +148,7 @@
         :disabled="!canBuild || building"
         class="w-full py-3 rounded-xl text-white font-semibold text-base transition-all duration-200"
         :class="canBuild && !building
-          ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl active:scale-[0.98]'
+          ? 'bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl active:scale-[0.98]'
           : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'"
         @click="buildAPK"
       >
