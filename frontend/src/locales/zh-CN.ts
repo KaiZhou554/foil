@@ -1,63 +1,82 @@
 export default {
   app: {
-    versionPrefix: '配置版本号：',
+    versionPrefix: '版本',
     defaultAppName: 'Foil',
   },
+
   welcome: {
-    title: '欢迎',
-    slogan: '开始设置你的体验。',
-    selectLanguage: '选择语言',
+    title: '欢迎使用 Foil',
+    slogan: '几步即可生成 APK。',
+    selectLanguage: '语言',
     getStarted: '继续',
   },
+
   sidebar: {
     home: '主页',
     settings: '设置',
   },
+
   settings: {
     title: '设置',
     language: '语言',
     displayLanguage: '显示语言',
+
     general: '通用',
-    backToSettings: '返回设置',
-    saveLocation: 'APK 保存位置',
+
+    backToSettings: '设置',
+
+    saveLocation: '保存位置',
     locationDesktop: '桌面',
     locationCustom: '自定义',
-    locationPlaceholder: '点击浏览选择文件夹...',
-    btnBrowse: '浏览',
+    locationPlaceholder: '选择文件夹',
+    btnBrowse: '浏览…',
   },
+
   titlebar: {
     minimize: '最小化',
     maximize: '最大化',
     close: '关闭',
   },
+
   buildPage: {
-    header: '极速打包',
-    sourceCard: 'HTML 项目来源',
+    header: '生成 APK',
+
+    sourceCard: '项目',
+
     statusNotSelected: '未选择',
-    statusFolder: '已选择 — 文件夹',
-    statusZip: '已选择 — ZIP 包',
-    statusHtml: '已选择 — HTML 文件',
+    statusFolder: '文件夹',
+    statusZip: 'ZIP',
+    statusHtml: 'HTML',
+
     tabFolder: '文件夹',
-    tabFile: 'ZIP 或 HTML 文件',
-    placeholderFolder: '粘贴文件夹路径，或点击右侧按钮选择...',
-    placeholderFile: '选择 .zip 或 .html 文件...',
-    btnBrowse: '浏览',
-    btnSelectFile: '选择文件',
-    appNameCard: '应用名称',
-    placeholderAppName: '输入显示在手机上的应用名称',
-    iconCard: '应用图标',
-    iconHint: '上传一张图片自动处理为图标，不传则自动生成',
-    btnSelectImage: '选择图片',
-    btnClear: '清除',
-    advanced: '高级选项 — 包名 / 版本号',
-    pkgPreview: '包名预览：',
-    versionLabel: '自定义版本号（留空自动生成，支持 1.0 / 2.3.1 格式）',
-    versionPlaceholder: '例如 7 或 2.3.1',
+    tabFile: 'ZIP 或 HTML',
+
+    placeholderFolder: '选择文件夹',
+    placeholderFile: '选择 ZIP 或 HTML',
+
+    btnBrowse: '浏览…',
+    btnSelectFile: '选择…',
+
+    appNameCard: '名称',
+    placeholderAppName: '输入应用名称',
+
+    iconCard: '图标',
+    iconHint: '未选择时将自动生成',
+    btnSelectImage: '选择…',
+    btnClear: '移除',
+
+    advanced: '高级',
+    pkgPreview: '包名',
+    versionLabel: '版本号',
+    versionPlaceholder: '例如 1.0.0',
+
     btnBuild: '生成 APK',
-    btnBuilding: '正在生成 APK...',
-    successTitle: '✓ APK 生成成功',
-    failTitle: '✗ 生成失败',
+    btnBuilding: '正在生成…',
+
+    successTitle: 'APK 已生成',
+    failTitle: '无法生成',
+
     logCustomPkg: '使用自定义包名：',
-    logBuilding: '正在构建 APK...\n',
+    logBuilding: '正在生成 APK...\n',
   },
 }

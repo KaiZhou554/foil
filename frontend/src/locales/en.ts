@@ -1,62 +1,81 @@
 export default {
   app: {
-    versionPrefix: 'Configuration version: ',
+    versionPrefix: 'Version ',
     defaultAppName: 'Foil',
   },
+
   welcome: {
-    title: 'Welcome',
-    slogan: 'Configure smarter, work faster.',
-    selectLanguage: 'Select Language',
-    getStarted: 'Get Started',
+    title: 'Welcome to Foil',
+    slogan: 'Generate APKs in a few steps.',
+    selectLanguage: 'Language',
+    getStarted: 'Continue',
   },
+
   sidebar: {
     home: 'Home',
     settings: 'Settings',
   },
+
   settings: {
     title: 'Settings',
     language: 'Language',
     displayLanguage: 'Display Language',
+
     general: 'General',
-    backToSettings: 'Back to Settings',
-    saveLocation: 'APK Save Location',
+
+    backToSettings: 'Settings',
+
+    saveLocation: 'Save Location',
     locationDesktop: 'Desktop',
     locationCustom: 'Custom',
-    locationPlaceholder: 'Click Browse to select folder...',
-    btnBrowse: 'Browse',
+    locationPlaceholder: 'Select folder',
+    btnBrowse: 'Browse…',
   },
+
   titlebar: {
     minimize: 'Minimize',
     maximize: 'Maximize',
     close: 'Close',
   },
+
   buildPage: {
-    header: 'Quick Pack',
-    sourceCard: 'Project Source',
+    header: 'Build APK',
+
+    sourceCard: 'Project',
+
     statusNotSelected: 'Not selected',
-    statusFolder: 'Selected — Folder',
-    statusZip: 'Selected — ZIP',
-    statusHtml: 'Selected — HTML',
+    statusFolder: 'Folder',
+    statusZip: 'ZIP',
+    statusHtml: 'HTML',
+
     tabFolder: 'Folder',
-    tabFile: 'ZIP / HTML File',
-    placeholderFolder: 'Paste folder path, or click Browse...',
-    placeholderFile: 'Select .zip or .html file...',
-    btnBrowse: 'Browse',
-    btnSelectFile: 'Select File',
-    appNameCard: 'App Name',
-    placeholderAppName: 'Enter the app name shown on your phone',
-    iconCard: 'App Icon',
-    iconHint: 'Upload an image for the icon, or leave empty for auto-generate',
-    btnSelectImage: 'Select Image',
-    btnClear: 'Clear',
-    advanced: 'Advanced — Package / Version',
-    pkgPreview: 'Preview:',
-    versionLabel: 'Version (leave empty for auto, supports 1.0 / 2.3.1)',
-    versionPlaceholder: 'e.g. 7 or 2.3.1',
+    tabFile: 'ZIP or HTML',
+
+    placeholderFolder: 'Select folder',
+    placeholderFile: 'Select ZIP or HTML',
+
+    btnBrowse: 'Browse…',
+    btnSelectFile: 'Select…',
+
+    appNameCard: 'Name',
+    placeholderAppName: 'Enter app name',
+
+    iconCard: 'Icon',
+    iconHint: 'Auto-generated if not set',
+    btnSelectImage: 'Select…',
+    btnClear: 'Remove',
+
+    advanced: 'Advanced',
+    pkgPreview: 'Package Name',
+    versionLabel: 'Version',
+    versionPlaceholder: 'e.g. 1.0.0',
+
     btnBuild: 'Build APK',
-    btnBuilding: 'Building APK...',
-    successTitle: '✓ APK built successfully',
-    failTitle: '✗ Build failed',
+    btnBuilding: 'Building…',
+
+    successTitle: 'APK Built',
+    failTitle: 'Build Failed',
+
     logCustomPkg: 'Using custom package: ',
     logBuilding: 'Building APK...\n',
   },
