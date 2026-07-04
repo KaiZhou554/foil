@@ -63,7 +63,7 @@ import { NSelect, NRadio, NRadioGroup, NInput, NButton, NCollapseTransition } fr
 import { useAppStore } from '@/stores/appStore'
 import { SelectOutputDir } from '../../wailsjs/go/main/App'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const appStore = useAppStore()
 
 const languageOptions = [
@@ -96,6 +96,7 @@ async function pickCustomPath() {
 function switchLanguage(value: string) {
   const lang = value as 'zh-CN' | 'en'
   appStore.setLanguage(lang)
+  locale.value = lang
   appStore.saveConfig()
 }
 </script>

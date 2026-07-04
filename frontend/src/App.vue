@@ -41,7 +41,6 @@ import { WindowMinimise, Quit } from '../wailsjs/runtime/runtime'
 import AppIcon from '@/assets/appicon_128px.webp'
 import TitleBar from '@/components/TitleBar.vue'
 import { useAppStore } from '@/stores/appStore'
-import { usePrivacyConfigStore } from '@/stores/privacyConfigStore'
 import { useWindowState } from '@/composables/useWindowState'
 
 const router = useRouter()
@@ -84,7 +83,7 @@ const themeOverrides = {
 const showSidebarToggle = computed(() =>
   route.path.startsWith('/main') && !appStore.isFirstLaunch,
 )
-const showBackButton = computed(() => route.path === '/setup')
+const showBackButton = computed(() => false)
 
 // ── TitleBar event handlers ──
 function handleBack() {
@@ -109,8 +108,7 @@ const transitionName = ref('fade')
 
 /** First-segment path → first-segment path → CSS transition name */
 const topTransitionMap: Record<string, Record<string, string>> = {
-  '/welcome': { '/setup': 'slide-left' },
-  '/setup':   { '/welcome': 'slide-right', '/main': 'fade' },
+  '/welcome': { '/main': 'fade' },
 }
 
 watch(
@@ -126,31 +124,15 @@ watch(
   },
 )
 
-const privacyStore = usePrivacyConfigStore()
-
-// When isFirstLaunch flips from default (true) to loaded (false), redirect to home.
-// Using a watch avoids the async-timing issues of router.replace inside onMounted.
+// When isFirstLaunch flips to false, redirect welcome to home.
 watch(
   () => appStore.isFirstLaunch,
   (val) => {
-    if (!val) {
-      const p = route.path
-      if (p === '/welcome' || p === '/setup') {
-        router.replace('/main/home')
-      }
+    if (!val && route.path === '/welcome') {
+      router.replace('/main/home')
     }
   },
 )
-
-// Auto-save config when privacy settings change (debounced 400ms)
-let privacySaveTimer: ReturnType<typeof setTimeout> | null = null
-function schedulePrivacySave() {
-  if (!appStore.configLoaded) return
-  if (privacySaveTimer) clearTimeout(privacySaveTimer)
-  privacySaveTimer = setTimeout(() => appStore.saveConfig(), 400)
-}
-watch(() => privacyStore.optionValues, schedulePrivacySave, { deep: true })
-watch(() => privacyStore.optionDisplay, schedulePrivacySave, { deep: true })
 
 onMounted(async () => {
   // Start polling window state (also does an immediate first sync)

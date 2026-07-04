@@ -102,35 +102,41 @@
       <!-- 高级选项 -->
       <n-collapse>
         <n-collapse-item :title="t('buildPage.advanced')">
-          <div class="space-y-3">
-            <n-input-group>
-              <n-input
-                v-model:value="pkgSegment1"
-                placeholder="com"
-                :allow-input="onlyAllowPkg"
-                :style="{ width: '33%' }"
-                maxlength="20"
-              />
-              <n-input
-                v-model:value="pkgSegment2"
-                :placeholder="lastSeg2 || 'company'"
-                :allow-input="onlyAllowPkg"
-                :style="{ width: '33%' }"
-                maxlength="20"
-              />
-              <n-input
-                v-model:value="pkgSegment3"
-                placeholder="auto"
-                :allow-input="onlyAllowPkg"
-                :style="{ width: '33%' }"
-                maxlength="20"
-              />
-            </n-input-group>
-            <div class="text-xs text-gray-400 font-mono">
-              {{ t('buildPage.pkgPreview') }} {{ previewPkgName }}
+          <div class="space-y-4">
+            <!-- Package name -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('buildPage.pkgPreview') }}</span>
+                <span class="text-sm text-gray-400 font-mono">{{ previewPkgName }}</span>
+              </div>
+              <n-input-group>
+                <n-input
+                  v-model:value="pkgSegment1"
+                  placeholder="com"
+                  :allow-input="onlyAllowPkg"
+                  :style="{ width: '33%' }"
+                  maxlength="20"
+                />
+                <n-input
+                  v-model:value="pkgSegment2"
+                  :placeholder="lastSeg2 || 'company'"
+                  :allow-input="onlyAllowPkg"
+                  :style="{ width: '33%' }"
+                  maxlength="20"
+                />
+                <n-input
+                  v-model:value="pkgSegment3"
+                  placeholder="auto"
+                  :allow-input="onlyAllowPkg"
+                  :style="{ width: '33%' }"
+                  maxlength="20"
+                />
+              </n-input-group>
             </div>
+
+            <!-- Version -->
             <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1">{{ t('buildPage.versionLabel') }}</label>
+              <label class="text-sm text-gray-500 dark:text-gray-400 block mb-1.5">{{ t('buildPage.versionLabel') }}</label>
               <n-input
                 v-model:value="versionName"
                 :placeholder="t('buildPage.versionPlaceholder')"
