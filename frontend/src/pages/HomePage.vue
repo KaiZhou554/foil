@@ -3,62 +3,53 @@
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-        极速打包
+        {{ t('buildPage.header') }}
       </h1>
     </div>
 
     <div class="max-w-2xl space-y-5">
       <!-- HTML 项目来源 (Tabs) -->
-      <n-card title="HTML 项目来源" size="small">
+      <n-card size="small">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <span>{{ t('buildPage.sourceCard') }}</span>
+            <n-tag v-if="!sourceStatus" type="default" size="small" round>
+              {{ t('buildPage.statusNotSelected') }}
+            </n-tag>
+            <n-tag v-else type="success" size="small" round>
+              <template #icon><n-icon :component="CheckmarkCircle24Regular" /></template>
+              {{ t('buildPage.status' + sourceStatus) }}
+            </n-tag>
+          </div>
+        </template>
         <n-tabs type="line" animated default-value="folder" @update:value="onTabChange">
-          <!-- Tab 1: 文件夹路径 -->
-          <n-tab-pane name="folder" tab="文件夹">
+          <n-tab-pane name="folder" :tab="t('buildPage.tabFolder')">
             <div class="space-y-3">
               <div class="flex items-center gap-2">
                 <n-input
                   v-model:value="projectPath"
-                  placeholder="粘贴文件夹路径，或点击右侧按钮选择..."
+                  :placeholder="t('buildPage.placeholderFolder')"
                   clearable
                   @keydown.enter="onPathEnter"
                 />
                 <n-button @click="selectDir" type="primary" ghost>
-                  浏览
+                  {{ t('buildPage.btnBrowse') }}
                 </n-button>
-              </div>
-              <!-- Status tag -->
-              <div class="flex items-center gap-2">
-                <n-tag v-if="!projectPath" type="default" size="small">未选择</n-tag>
-                <n-tag v-else-if="isFolderSelected" type="success" size="small" round>
-                  <template #icon><n-icon :component="CheckmarkCircle24Regular" /></template>
-                  已选择 — 文件夹
-                </n-tag>
               </div>
             </div>
           </n-tab-pane>
 
-          <!-- Tab 2: ZIP / HTML 文件 -->
-          <n-tab-pane name="file" tab="ZIP 或 HTML 文件">
+          <n-tab-pane name="file" :tab="t('buildPage.tabFile')">
             <div class="space-y-3">
               <div class="flex items-center gap-2">
                 <n-input
                   v-model:value="filePath"
-                  placeholder="选择 .zip 或 .html 文件..."
+                  :placeholder="t('buildPage.placeholderFile')"
                   clearable
                 />
                 <n-button @click="selectFile" type="primary" ghost>
-                  选择文件
+                  {{ t('buildPage.btnSelectFile') }}
                 </n-button>
-              </div>
-              <div class="flex items-center gap-2">
-                <n-tag v-if="!filePath" type="default" size="small">未选择</n-tag>
-                <n-tag v-else-if="isZipSelected" type="success" size="small" round>
-                  <template #icon><n-icon :component="CheckmarkCircle24Regular" /></template>
-                  已选择 — ZIP 包
-                </n-tag>
-                <n-tag v-else-if="isHtmlSelected" type="success" size="small" round>
-                  <template #icon><n-icon :component="CheckmarkCircle24Regular" /></template>
-                  已选择 — HTML 文件
-                </n-tag>
               </div>
             </div>
           </n-tab-pane>
@@ -66,19 +57,18 @@
       </n-card>
 
       <!-- 应用名称 -->
-      <n-card title="应用名称" size="small">
+      <n-card :title="t('buildPage.appNameCard')" size="small">
         <n-input
           v-model:value="appName"
-          placeholder="输入显示在手机上的应用名称"
+          :placeholder="t('buildPage.placeholderAppName')"
           maxlength="30"
           :input-props="{ onInput: (e: Event) => { const t = (e.target as HTMLInputElement)?.value; if (t) previewPkg(); } }"
         />
       </n-card>
 
       <!-- 图标上传 -->
-      <n-card title="应用图标" size="small">
+      <n-card :title="t('buildPage.iconCard')" size="small">
         <div class="flex items-center gap-4">
-          <!-- Preview: uploaded image or auto-generated letter -->
           <img
             v-if="customIconData"
             :src="customIconData"
@@ -92,7 +82,7 @@
           </div>
           <div class="flex-1">
             <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">
-              上传一张图片自动处理为图标，不传则自动生成
+              {{ t('buildPage.iconHint') }}
             </div>
             <input
               ref="fileInputRef"
@@ -101,9 +91,9 @@
               class="hidden"
               @change="onIconFileSelected"
             />
-            <n-button size="small" @click="openIconPicker">选择图片</n-button>
+            <n-button size="small" @click="openIconPicker">{{ t('buildPage.btnSelectImage') }}</n-button>
             <n-button v-if="customIconData" size="small" tertiary @click="clearIcon" class="ml-2">
-              清除
+              {{ t('buildPage.btnClear') }}
             </n-button>
           </div>
         </div>
@@ -111,7 +101,7 @@
 
       <!-- 高级选项 -->
       <n-collapse>
-        <n-collapse-item title="高级选项 — 包名 / 版本号">
+        <n-collapse-item :title="t('buildPage.advanced')">
           <div class="space-y-3">
             <n-input-group>
               <n-input
@@ -130,20 +120,20 @@
               />
               <n-input
                 v-model:value="pkgSegment3"
-                placeholder="自动填充"
+                placeholder="auto"
                 :allow-input="onlyAllowPkg"
                 :style="{ width: '33%' }"
                 maxlength="20"
               />
             </n-input-group>
             <div class="text-xs text-gray-400 font-mono">
-              包名预览：{{ previewPkgName }}
+              {{ t('buildPage.pkgPreview') }} {{ previewPkgName }}
             </div>
             <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1">自定义版本号（留空自动生成，支持 1.0 / 2.3.1 格式）</label>
+              <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1">{{ t('buildPage.versionLabel') }}</label>
               <n-input
                 v-model:value="versionName"
-                placeholder="例如 7 或 2.3.1"
+                :placeholder="t('buildPage.versionPlaceholder')"
                 :allow-input="onlyAllowVersion"
                 maxlength="20"
               />
@@ -166,9 +156,9 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
           </svg>
-          正在生成 APK...
+          {{ t('buildPage.btnBuilding') }}
         </span>
-        <span v-else>生成 APK</span>
+        <span v-else>{{ t('buildPage.btnBuild') }}</span>
       </button>
 
       <!-- 日志 -->
@@ -178,12 +168,12 @@
 
       <!-- 结果 -->
       <div v-if="result" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm">
-        <p class="text-green-700 dark:text-green-300 font-medium">✓ APK 生成成功</p>
+        <p class="text-green-700 dark:text-green-300 font-medium">{{ t('buildPage.successTitle') }}</p>
         <p class="text-green-600 dark:text-green-400 mt-1 font-mono text-xs">{{ result.APKPath }}</p>
       </div>
 
       <div v-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-sm">
-        <p class="text-red-700 dark:text-red-300 font-medium">✗ 生成失败</p>
+        <p class="text-red-700 dark:text-red-300 font-medium">{{ t('buildPage.failTitle') }}</p>
         <p class="text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
       </div>
     </div>
@@ -192,12 +182,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile } from '../../wailsjs/go/main/App'
 import { CheckmarkCircle24Regular } from '@vicons/fluent'
 import {
   NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard,
   NInputGroup, NCollapseItem, NCollapse,
 } from 'naive-ui'
+
+const { t } = useI18n()
 
 // ── State ──
 const inputTab = ref('folder')
@@ -215,7 +208,7 @@ const pkgSegment2 = ref('')
 const pkgSegment3 = ref('')
 const lastSeg2 = ref('')
 
-// Custom version number (digits only)
+// Custom version number
 const versionName = ref('')
 
 // Icon
@@ -224,9 +217,15 @@ const customIconData = ref<string | null>(null)
 const customIconFileName = ref('')
 
 // ── Computed ──
-const isFolderSelected = computed(() => !!projectPath.value)
-const isZipSelected = computed(() => !!filePath.value && filePath.value.toLowerCase().endsWith('.zip'))
-const isHtmlSelected = computed(() => !!filePath.value && (filePath.value.toLowerCase().endsWith('.html') || filePath.value.toLowerCase().endsWith('.htm')))
+const sourceStatus = computed(() => {
+  if (projectPath.value) return 'Folder'
+  if (filePath.value) {
+    const lower = filePath.value.toLowerCase()
+    if (lower.endsWith('.zip')) return 'Zip'
+    if (lower.endsWith('.html') || lower.endsWith('.htm')) return 'Html'
+  }
+  return null
+})
 
 const iconLetter = computed(() => {
   if (customIconData.value) return ''
@@ -256,17 +255,20 @@ async function selectDir() {
   const dir = await SelectDirectory()
   if (dir) {
     projectPath.value = dir.replace(/^"(.*)"$/, '$1').trim()
+    filePath.value = '' // selecting folder clears file
   }
 }
 
 function onPathEnter() {
   projectPath.value = projectPath.value.replace(/^"(.*)"$/, '$1').trim()
+  filePath.value = '' // manual folder entry clears file
 }
 
 async function selectFile() {
   const file = await SelectFile()
   if (file) {
     filePath.value = file
+    projectPath.value = '' // selecting file clears folder
   }
 }
 
@@ -296,12 +298,10 @@ function clearIcon() {
 
 // ── Package name validation ──
 function onlyAllowPkg(value: string) {
-  // Each segment must start with a letter (a-z)
   return !value || /^[a-z][a-z0-9_.-]*$/.test(value)
 }
 
 function onlyAllowVersion(value: string) {
-  // Allow digits and dots, prevent consecutive/multiple dots
   return !value || /^\d*(\.?\d*)?$/.test(value)
 }
 
@@ -319,21 +319,18 @@ async function buildAPK() {
   error.value = ''
 
   try {
-    // Determine project directory
     let projectDir = ''
     if (inputTab.value === 'folder') {
       projectDir = projectPath.value
     } else {
-      // TODO: extract zip or use html file
-      buildLog.value += '文件模式暂未实现，请使用文件夹模式\n'
+      buildLog.value += t('buildPage.logFileModeNotImpl')
       building.value = false
       return
     }
 
-    // Generate package name if not custom
     const customPkg = pkgSegment3.value ? `${pkgSegment1.value}.${pkgSegment2.value}.${pkgSegment3.value}` : ''
     if (customPkg) {
-      buildLog.value += `使用自定义包名: ${customPkg}\n`
+      buildLog.value += `${t('buildPage.logCustomPkg')}${customPkg}\n`
     }
 
     // Generate icons as WebP
@@ -341,7 +338,6 @@ async function buildAPK() {
     const iconPaths = await GetIconPaths()
 
     if (customIconData.value) {
-      // Uploaded image → resize to all icon sizes
       for (const iconPath of iconPaths) {
         const size = extractIconSize(iconPath)
         if (size > 0) {
@@ -351,7 +347,6 @@ async function buildAPK() {
         }
       }
     } else {
-      // Auto-generated text icon
       const letter = appName.value.charAt(0).toUpperCase()
       const colors = ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444']
       const colorIndex = appName.value.charCodeAt(0) % colors.length
@@ -366,12 +361,12 @@ async function buildAPK() {
       }
     }
 
-    buildLog.value += '正在构建 APK...\n'
+    buildLog.value += t('buildPage.logBuilding')
     const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value, icons)
     result.value = { APKPath: res.APKPath, PackageName: res.PackageName, VersionName: res.VersionName, VersionCode: res.VersionCode }
     buildLog.value += res.Log || ''
   } catch (err: any) {
-    error.value = String(err?.message || err || '未知错误')
+    error.value = String(err?.message || err || '')
   } finally {
     building.value = false
   }
@@ -398,10 +393,9 @@ function generateTextIcon(letter: string, bgColor: string, size: number, isForeg
     const half = size / 2
     const radius = size * 0.22
 
-    ctx.clearRect(0, 0, size, size) // start fully transparent
+    ctx.clearRect(0, 0, size, size)
 
     if (!isForeground) {
-      // Launcher icon: rounded rectangle with color
       ctx.fillStyle = bgColor
       ctx.beginPath()
       ctx.moveTo(radius, 0)
@@ -416,9 +410,6 @@ function generateTextIcon(letter: string, bgColor: string, size: number, isForeg
       ctx.closePath()
       ctx.fill()
     } else {
-      // Foreground: draw the bgColor as rounded rect too, so the icon
-      // has a visible colored shape even before adaptive icon compositing.
-      // Android's adaptive icon masks this with the device shape.
       ctx.fillStyle = bgColor
       ctx.beginPath()
       ctx.moveTo(radius, 0)
@@ -434,7 +425,6 @@ function generateTextIcon(letter: string, bgColor: string, size: number, isForeg
       ctx.fill()
     }
 
-    // Draw center letter (white on both foreground and launcher)
     ctx.fillStyle = '#FFFFFF'
     const fontSize = Math.round(size * 0.5)
     ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`
@@ -459,7 +449,6 @@ function resizeImage(dataUrl: string, size: number, _isForeground: boolean): Pro
       const ctx = canvas.getContext('2d')!
       ctx.clearRect(0, 0, size, size)
 
-      // Clip to rounded rectangle (same for foreground and launcher)
       const radius = size * 0.22
       ctx.beginPath()
       ctx.moveTo(radius, 0)
@@ -474,7 +463,6 @@ function resizeImage(dataUrl: string, size: number, _isForeground: boolean): Pro
       ctx.closePath()
       ctx.clip()
 
-      // Crop image to square center and draw
       const min = Math.min(img.width, img.height)
       const sx = (img.width - min) / 2
       const sy = (img.height - min) / 2
@@ -494,7 +482,6 @@ function blobToBase64(blob: Blob): Promise<string> {
     const reader = new FileReader()
     reader.onload = () => {
       const result = reader.result as string
-      // Strip the data:...;base64, prefix
       const comma = result.indexOf(',')
       resolve(comma >= 0 ? result.substring(comma + 1) : result)
     }
