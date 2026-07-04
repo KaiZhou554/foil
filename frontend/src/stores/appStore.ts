@@ -16,6 +16,7 @@ export const useAppStore = defineStore('app', () => {
   const currentLanguage = ref<Locale>('zh-CN')
   const outputDir = ref<string>('')
   const showFloatButton = ref<boolean>(false)
+  const openAfterBuild = ref<boolean>(true)
 
   /** Whether the config has been loaded from the backend yet. */
   const configLoaded = ref<boolean>(false)
@@ -30,6 +31,7 @@ export const useAppStore = defineStore('app', () => {
       currentLanguage.value = cfg.language as Locale
       outputDir.value = cfg.outputDir || ''
       showFloatButton.value = cfg.showFloatButton ?? false
+      openAfterBuild.value = cfg.openAfterBuild ?? true
       configLoaded.value = true
     } catch (err) {
       console.error('Failed to load config from backend:', err)
@@ -46,6 +48,7 @@ export const useAppStore = defineStore('app', () => {
         language: currentLanguage.value,
         outputDir: outputDir.value,
         showFloatButton: showFloatButton.value,
+        openAfterBuild: openAfterBuild.value,
       }))
     } catch (err) {
       console.error('Failed to save config to backend:', err)
@@ -96,6 +99,7 @@ export const useAppStore = defineStore('app', () => {
     currentLanguage,
     outputDir,
     showFloatButton,
+    openAfterBuild,
     configLoaded,
     isMaximized,
     sidebarOpen,

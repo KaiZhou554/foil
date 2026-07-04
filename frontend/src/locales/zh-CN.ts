@@ -31,6 +31,7 @@ export default {
     locationPlaceholder: '选择文件夹',
     btnBrowse: '浏览…',
     showFloatButton: '显示日志',
+    openAfterBuild: '构建后打开文件夹',
   },
 
   titlebar: {

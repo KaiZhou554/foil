@@ -31,6 +31,7 @@ export namespace config {
 	    language: string;
 	    outputDir: string;
 	    showFloatButton: boolean;
+	    openAfterBuild: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -43,6 +44,7 @@ export namespace config {
 	        this.language = source["language"];
 	        this.outputDir = source["outputDir"];
 	        this.showFloatButton = source["showFloatButton"];
+	        this.openAfterBuild = source["openAfterBuild"];
 	    }
 	}
 

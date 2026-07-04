@@ -31,6 +31,7 @@ export default {
     locationPlaceholder: 'Select folder',
     btnBrowse: 'Browse…',
     showFloatButton: 'Show Build Log',
+    openAfterBuild: 'Open Folder After Build',
   },
 
   titlebar: {

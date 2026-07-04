@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -157,6 +158,11 @@ func (a *App) PrepareFileInput(filePath string) (string, error) {
 	}
 
 	return "", fmt.Errorf("unsupported file type: %s", filePath)
+}
+
+// OpenFolder opens a folder in File Explorer. On non-Windows it's a no-op.
+func (a *App) OpenFolder(path string) {
+	exec.Command("explorer", path).Start()
 }
 
 // BuildAPK runs the full build pipeline. Called from frontend via Wails bind.

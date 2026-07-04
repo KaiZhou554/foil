@@ -179,7 +179,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput } from '../../wailsjs/go/main/App'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput, OpenFolder } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
 import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
@@ -368,6 +368,10 @@ async function buildAPK() {
     const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value.replace(/\.+$/, ''), icons)
     buildLog.value += res.Log || ''
     message.success(t('buildPage.successTitle') + '\n' + res.APKPath, { duration: 4000, keepAliveOnHover: true })
+    if (appStore.openAfterBuild) {
+      const dir = res.APKPath.substring(0, res.APKPath.lastIndexOf('\\'))
+      if (dir) OpenFolder(dir)
+    }
   } catch (err: any) {
     const msg = String(err?.message || err || '')
     buildLog.value += msg + '\n'

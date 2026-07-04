@@ -56,6 +56,10 @@
           <span class="text-sm text-neutral-700 dark:text-neutral-200">{{ t('settings.showFloatButton') }}</span>
           <n-switch :value="appStore.showFloatButton" @update:value="val => { appStore.showFloatButton = val; appStore.saveConfig() }" />
         </div>
+        <div class="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3">
+          <span class="text-sm text-neutral-700 dark:text-neutral-200">{{ t('settings.openAfterBuild') }}</span>
+          <n-switch :value="appStore.openAfterBuild" @update:value="val => { appStore.openAfterBuild = val; appStore.saveConfig() }" />
+        </div>
       </div>
     </section>
   </div>

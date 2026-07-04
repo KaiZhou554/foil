@@ -9,6 +9,7 @@ type Config struct {
 	Language        string `toml:"language"        json:"language"`
 	OutputDir       string `toml:"outputDir"       json:"outputDir"`
 	ShowFloatButton bool   `toml:"showFloatButton" json:"showFloatButton"`
+	OpenAfterBuild  bool   `toml:"openAfterBuild"  json:"openAfterBuild"`
 }
 
 // Validate checks that the loaded configuration has sensible values.
@@ -29,5 +30,6 @@ func DefaultConfig() *Config {
 		Language:        "zh-CN",
 		OutputDir:       "",
 		ShowFloatButton: false,
+		OpenAfterBuild:  true,
 	}
 }
