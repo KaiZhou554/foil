@@ -26,7 +26,7 @@
       </div>
       <!-- Loading placeholder while config loads -->
       <div v-else class="flex-1 overflow-hidden flex items-center justify-center">
-        <div class="w-6 h-6 border-2 border-gray-300 border-t-pink-400 rounded-full animate-spin" />
+        <div class="w-6 h-6 border-2 border-neutral-300 border-t-pink-400 rounded-full animate-spin" />
       </div>
     </div>
   </n-config-provider>

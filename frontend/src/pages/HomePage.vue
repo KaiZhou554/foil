@@ -2,7 +2,7 @@
   <div class="h-full overflow-y-auto p-6">
       <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+      <h1 class="text-2xl font-bold text-neutral-800 dark:text-neutral-100">
         {{ t('buildPage.header') }}
       </h1>
     </div>
@@ -72,7 +72,7 @@
           <img
             v-if="customIconData"
             :src="customIconData"
-            class="w-16 h-16 rounded-xl object-cover shadow-sm border border-gray-200 dark:border-gray-700 shrink-0"
+            class="w-16 h-16 rounded-xl object-cover shadow-sm border border-neutral-200 dark:border-neutral-700 shrink-0"
           />
           <div
             v-else
@@ -81,7 +81,7 @@
             {{ iconLetter }}
           </div>
           <div class="flex-1">
-            <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <div class="text-neutral-500 dark:text-neutral-400 mb-2">
               {{ t('buildPage.iconHint') }}
             </div>
             <input
@@ -91,10 +91,12 @@
               class="hidden"
               @change="onIconFileSelected"
             />
-            <n-button size="small" @click="openIconPicker">{{ t('buildPage.btnSelectImage') }}</n-button>
-            <n-button v-if="customIconData" size="small" tertiary @click="clearIcon" class="ml-2">
-              {{ t('buildPage.btnClear') }}
-            </n-button>
+            <div class="flex items-center gap-2">
+              <n-button size="small" @click="openIconPicker">{{ t('buildPage.btnSelectImage') }}</n-button>
+              <n-button v-if="customIconData" size="small" tertiary @click="clearIcon">
+                {{ t('buildPage.btnClear') }}
+              </n-button>
+            </div>
           </div>
         </div>
       </n-card>
@@ -106,8 +108,8 @@
             <!-- Package name -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('buildPage.pkgPreview') }}</span>
-                <span class="text-sm text-gray-400 font-mono">{{ previewPkgName }}</span>
+                <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ t('buildPage.pkgPreview') }}</span>
+                <span class="text-sm text-neutral-400 font-mono">{{ previewPkgName }}</span>
               </div>
               <n-input-group>
                 <n-input
@@ -135,8 +137,8 @@
             </div>
 
             <!-- Version -->
-            <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <label class="text-sm text-gray-500 dark:text-gray-400 block mb-1.5">{{ t('buildPage.versionLabel') }}</label>
+            <div class="border-t border-neutral-200 dark:border-neutral-700 pt-3">
+              <label class="text-sm text-neutral-500 dark:text-neutral-400 block mb-1.5">{{ t('buildPage.versionLabel') }}</label>
               <n-input
                 v-model:value="versionName"
                 :placeholder="t('buildPage.versionPlaceholder')"
@@ -154,7 +156,7 @@
         class="w-full py-3 rounded-xl text-white font-semibold text-base transition-all duration-200"
         :class="canBuild && !building
           ? 'bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl active:scale-[0.98]'
-          : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'"
+          : 'bg-neutral-400 dark:bg-neutral-600 cursor-not-allowed'"
         @click="buildAPK"
       >
         <span v-if="building" class="flex items-center justify-center gap-2">

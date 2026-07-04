@@ -7,14 +7,14 @@
         <!-- Backdrop overlay — closes sidebar when clicking outside -->
         <div
           v-if="appStore.sidebarOpen"
-          class="absolute inset-0 z-[5]"
+          class="absolute inset-0 z-5"
           @click="appStore.toggleSidebar()"
         />
         <Sidebar :sidebar-open="appStore.sidebarOpen" />
 
         <!-- Page content area with Naive UI scrollbar -->
         <div
-          class="h-full ml-12 bg-gray-50 dark:bg-gray-900 rounded-tl-md"
+          class="h-full ml-12 bg-neutral-50 dark:bg-neutral-900 rounded-tl-md"
         >
           <n-scrollbar>
             <n-message-provider>

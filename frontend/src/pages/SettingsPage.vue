@@ -1,17 +1,17 @@
 <template>
   <div class="h-full overflow-y-auto p-8">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+    <h1 class="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-6">
       {{ t('settings.title') }}
     </h1>
 
     <!-- Language -->
     <section class="mb-8">
-      <h2 class="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">
+      <h2 class="text-lg font-medium text-neutral-800 dark:text-neutral-100 mb-3">
         {{ t('settings.language') }}
       </h2>
-      <div class="bg-white dark:bg-gray-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4">
+      <div class="bg-white dark:bg-neutral-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4">
         <div class="flex items-center justify-between">
-          <span class="text-gray-700 dark:text-gray-200">{{ t('settings.displayLanguage') }}</span>
+          <span class="text-neutral-700 dark:text-neutral-200">{{ t('settings.displayLanguage') }}</span>
           <div class="w-36">
             <n-select :value="appStore.currentLanguage" :options="languageOptions" @update:value="switchLanguage"
               class="w-40" size="small" />
@@ -22,23 +22,23 @@
 
     <!-- General -->
     <section class="mb-8">
-      <h2 class="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">
+      <h2 class="text-lg font-medium text-neutral-800 dark:text-neutral-100 mb-3">
         {{ t('settings.general') }}
       </h2>
-      <div class="bg-white dark:bg-gray-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4">
+      <div class="bg-white dark:bg-neutral-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4">
         <div class="flex items-center justify-between gap-4">
-          <span class="text-sm text-gray-700 dark:text-gray-200 shrink-0">{{ t('settings.saveLocation') }}</span>
+          <span class="text-sm text-neutral-700 dark:text-neutral-200 shrink-0">{{ t('settings.saveLocation') }}</span>
           <n-radio-group :value="localMode" @update:value="onLocationModeChange">
             <n-radio value="desktop" class="mr-3">
-              <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.locationDesktop') }}</span>
+              <span class="text-sm text-neutral-700 dark:text-neutral-200">{{ t('settings.locationDesktop') }}</span>
             </n-radio>
             <n-radio value="custom">
-              <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.locationCustom') }}</span>
+              <span class="text-sm text-neutral-700 dark:text-neutral-200">{{ t('settings.locationCustom') }}</span>
             </n-radio>
           </n-radio-group>
         </div>
         <n-collapse-transition :show="localMode === 'custom'">
-          <div class="flex items-center gap-2 pt-2">
+          <div class="flex items-center gap-2 pt-6 pb-2">
             <n-input
               :value="customPath"
               :placeholder="t('settings.locationPlaceholder')"
@@ -52,8 +52,8 @@
           </div>
         </n-collapse-transition>
 
-        <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50 mt-3">
-          <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.showFloatButton') }}</span>
+        <div class="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3">
+          <span class="text-sm text-neutral-700 dark:text-neutral-200">{{ t('settings.showFloatButton') }}</span>
           <n-switch :value="appStore.showFloatButton" @update:value="val => { appStore.showFloatButton = val; appStore.saveConfig() }" />
         </div>
       </div>

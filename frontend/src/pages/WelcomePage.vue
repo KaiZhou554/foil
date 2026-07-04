@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+  <div class="h-full bg-neutral-50 dark:bg-neutral-900 flex items-center justify-center p-4">
       <div
         class="w-full max-w-lg p-10 text-center"
       >
@@ -11,16 +11,16 @@
         />
 
         <!-- Slogan -->
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+        <h1 class="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
           {{ t('welcome.title') }}
         </h1>
-        <p class="text-gray-500 dark:text-gray-400 mb-8">
+        <p class="text-neutral-500 dark:text-neutral-400 mb-8">
           {{ t('welcome.slogan') }}
         </p>
 
         <!-- Language selector (dropdown) -->
         <div class="mb-8">
-          <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">
+          <label class="block text-sm font-medium text-neutral-600 dark:text-neutral-300 mb-3">
             {{ t('welcome.selectLanguage') }}
           </label>
           <n-select

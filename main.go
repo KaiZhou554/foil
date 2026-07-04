@@ -95,7 +95,7 @@ func main() {
 	// Create application with options
 	err = wails.Run(&options.App{
 		Title:     "Foil",
-		Width:     1280,
+		Width:     780,
 		Height:    720,
 		Frameless: true,
 		AssetServer: &assetserver.Options{

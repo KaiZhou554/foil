@@ -6,8 +6,8 @@
       <!-- 置顶固定栏 -->
       <div
         class="absolute top-0 left-0 right-0 h-18 px-6 z-10 flex justify-between items-center
-        pointer-events-none bg-linear-to-b from-gray-50 via-gray-50 to-transparent dark:from-gray-900 dark:via-gray-900 dark:to-transparent">
-        <h1 class="text-xl font-medium text-gray-800 dark:text-gray-100">{{ t('setup.continueSetup') }}</h1>
+        pointer-events-none bg-linear-to-b from-neutral-50 via-neutral-50 to-transparent dark:from-neutral-900 dark:via-neutral-900 dark:to-transparent">
+        <h1 class="text-xl font-medium text-neutral-800 dark:text-neutral-100">{{ t('setup.continueSetup') }}</h1>
         <button
           @click="$emit('finish')"
           class="setup-btn pointer-events-auto cursor-pointer px-6 py-2 text-white rounded-xl font-medium transition-all flex items-center gap-3 outline-none focus-visible:outline-none">
@@ -26,8 +26,8 @@
 
           <!-- 引导文案 -->
           <section v-if="showIntro" class="mb-8">
-            <h2 class="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">{{ t('setup.introTitle', { appName }) }}</h2>
-            <div class="mt-3 flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <h2 class="text-lg font-medium text-neutral-800 dark:text-neutral-100 mb-3">{{ t('setup.introTitle', { appName }) }}</h2>
+            <div class="mt-3 flex flex-col gap-2 text-sm text-neutral-500 dark:text-neutral-400">
               <p>{{ t('setup.introDefault', { appName }) }}</p>
               <p>{{ t('setup.introChangeLater') }}</p>
             </div>
@@ -39,7 +39,7 @@
       </n-scrollbar>
       <div
         class="absolute bottom-0 left-0 right-0 h-6 z-10
-        pointer-events-none bg-linear-to-t from-gray-50 via-gray-50 to-transparent dark:from-gray-900 dark:via-gray-900 dark:to-transparent">
+        pointer-events-none bg-linear-to-t from-neutral-50 via-neutral-50 to-transparent dark:from-neutral-900 dark:via-neutral-900 dark:to-transparent">
       </div>
     </div>
   </div>
