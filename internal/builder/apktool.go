@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -59,7 +58,7 @@ func apktoolPatchManifest(unpackDir, templatePath, pkgName, appName, verName str
 
 	// ── Step 1: Decode ──────────────────────────────────────────────────
 	// --no-src skips DEX decompilation (not needed, much faster)
-	out, err := exec.Command(javaPath, "-jar", jarPath,
+	out, err := hiddenCmd(javaPath, "-jar", jarPath,
 		"d", templatePath, "-o", decodeDir, "--no-src").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("apktool decode: %w\n%s", err, string(out))
@@ -81,7 +80,7 @@ func apktoolPatchManifest(unpackDir, templatePath, pkgName, appName, verName str
 	}
 
 	// ── Step 4: Rebuild ────────────────────────────────────────────────
-	out, err = exec.Command(javaPath, "-jar", jarPath,
+	out, err = hiddenCmd(javaPath, "-jar", jarPath,
 		"b", decodeDir, "-o", rebuiltPath).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("apktool build: %w\n%s", err, string(out))
