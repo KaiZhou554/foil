@@ -47,6 +47,7 @@ defineEmits<{
   position: relative;
   display: block;
   width: 100%;
+  margin: 0 auto;
 }
 
 .btn {
@@ -54,7 +55,7 @@ defineEmits<{
   --padding: 4px;
   --transition: 0.4s;
   --button-color: #101010;
-  --highlight-color-hue: 210deg;
+  --highlight-color-hue: 342deg;
 
   user-select: none;
   display: flex;
@@ -195,9 +196,12 @@ defineEmits<{
     opacity var(--transition);
 }
 
-/* Idle: gentle breathing glow */
+/* Idle: gentle breathing glow (staggered via nth-child delays) */
 .btn-wrapper:not(.btn-building) .btn-letter {
-  animation: letter-anim 2s ease-in-out infinite;
+  animation-name: letter-anim;
+  animation-duration: 2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 @keyframes letter-anim {
@@ -209,9 +213,11 @@ defineEmits<{
 
 /* Building: blur/scale explode, then breathing glow */
 .btn-wrapper.btn-building .btn-letter {
-  animation:
-    focused-letter-anim 1s ease-in-out forwards,
-    letter-anim 1.2s ease-in-out infinite;
+  animation-name: focused-letter-anim, letter-anim;
+  animation-duration: 1s, 1.2s;
+  animation-timing-function: ease-in-out, ease-in-out;
+  animation-fill-mode: forwards, none;
+  animation-iteration-count: 1, infinite;
   animation-delay: 0s, 1s;
 }
 
@@ -317,16 +323,16 @@ defineEmits<{
 
 /* Override delays for building state */
 .btn-wrapper.btn-building .btn-letter:nth-child(1)  { animation-delay: 0s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(2)  { animation-delay: 0.08s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(3)  { animation-delay: 0.16s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(4)  { animation-delay: 0.24s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(5)  { animation-delay: 0.32s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(6)  { animation-delay: 0.4s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(7)  { animation-delay: 0.48s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(8)  { animation-delay: 0.56s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(9)  { animation-delay: 0.64s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(10) { animation-delay: 0.72s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(11) { animation-delay: 0.8s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(12) { animation-delay: 0.88s, 1s; }
-.btn-wrapper.btn-building .btn-letter:nth-child(13) { animation-delay: 0.96s, 1s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(2)  { animation-delay: 0.08s, 1.08s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(3)  { animation-delay: 0.16s, 1.16s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(4)  { animation-delay: 0.24s, 1.24s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(5)  { animation-delay: 0.32s, 1.32s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(6)  { animation-delay: 0.4s, 1.4s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(7)  { animation-delay: 0.48s, 1.48s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(8)  { animation-delay: 0.56s, 1.56s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(9)  { animation-delay: 0.64s, 1.64s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(10) { animation-delay: 0.72s, 1.72s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(11) { animation-delay: 0.8s, 1.8s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(12) { animation-delay: 0.88s, 1.88s; }
+.btn-wrapper.btn-building .btn-letter:nth-child(13) { animation-delay: 0.96s, 1.96s; }
 </style>

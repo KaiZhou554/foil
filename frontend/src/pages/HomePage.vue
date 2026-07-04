@@ -76,7 +76,7 @@
           />
           <div
             v-else
-            class="w-16 h-16 rounded-xl bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-sm shrink-0"
+            class="w-16 h-16 rounded-xl bg-taffy-500/50 flex items-center justify-center text-white text-3xl font-bold shadow-sm shrink-0"
           >
             {{ iconLetter }}
           </div>
@@ -157,6 +157,7 @@
         :idle-text="t('buildPage.btnBuild')"
         :busy-text="t('buildPage.btnBuilding')"
         @click="buildAPK"
+        class="max-w-sm"
       />
 
     </div>
@@ -229,7 +230,7 @@ const sourceStatus = computed(() => {
 
 const iconLetter = computed(() => {
   if (customIconData.value) return ''
-  return appName.value ? appName.value.charAt(0).toUpperCase() : '?'
+  return appName.value ? appName.value.charAt(0).toUpperCase() : '∴'
 })
 
 const canBuild = computed(() => {
