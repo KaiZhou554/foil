@@ -14,7 +14,7 @@
   "Info": {
     "companyName": "UniEditDept",
     "productName": "foil",
-    "productVersion": "0.1.0",
+    "productVersion": "0.1.2",
     "copyright": "MIT License",
     "comments": "Built using Wails (https://wails.io)"
   }

@@ -20,7 +20,9 @@
             <n-message-provider>
               <router-view v-slot="{ Component, route }">
                 <transition :name="nestedTransition" mode="out-in">
-                  <component :is="Component" :key="route.fullPath" />
+                  <KeepAlive>
+                    <component :is="Component" :key="route.name" />
+                  </KeepAlive>
                 </transition>
               </router-view>
             </n-message-provider>
@@ -32,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, KeepAlive } from 'vue'
 import { useRouter } from 'vue-router'
 import { NScrollbar, NMessageProvider } from 'naive-ui'
 import Sidebar from '@/components/Sidebar.vue'

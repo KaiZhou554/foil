@@ -303,7 +303,13 @@ function onlyAllowPkg(value: string) {
 }
 
 function onlyAllowVersion(value: string) {
-  return !value || /^\d*(\.?\d*)?$/.test(value)
+  if (!value) return true
+  // Only digits and dots
+  if (!/^[\d.]*$/.test(value)) return false
+  // No consecutive dots
+  if (value.includes('..')) return false
+  // At most 2 dots
+  return (value.match(/\./g) || []).length <= 2
 }
 
 function previewPkg() {
@@ -359,7 +365,7 @@ async function buildAPK() {
     }
 
     buildLog.value += t('buildPage.logBuilding')
-    const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value, icons)
+    const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value.replace(/\.+$/, ''), icons)
     buildLog.value += res.Log || ''
     message.success(t('buildPage.successTitle') + '\n' + res.APKPath, { duration: 4000, keepAliveOnHover: true })
   } catch (err: any) {

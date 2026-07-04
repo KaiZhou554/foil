@@ -5,6 +5,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -41,5 +42,21 @@ func DesktopPath() string {
 		return filepath.Join(os.Getenv("USERPROFILE"), "Desktop")
 	}
 	desktop := windows.UTF16ToString(buf[:])
-	return os.ExpandEnv(desktop)
+	// Windows registry uses %VAR% syntax; os.ExpandEnv only handles $VAR
+	desktop = expandWindowsEnv(desktop)
+	return desktop
+}
+
+// expandWindowsEnv replaces %VAR% patterns with environment variable values.
+// os.ExpandEnv only handles $VAR syntax, but Windows registry uses %VAR%.
+var envPattern = regexp.MustCompile(`%([^%]+)%`)
+
+func expandWindowsEnv(s string) string {
+	return envPattern.ReplaceAllStringFunc(s, func(match string) string {
+		name := match[1 : len(match)-1]
+		if v := os.Getenv(name); v != "" {
+			return v
+		}
+		return match
+	})
 }
