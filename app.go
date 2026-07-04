@@ -29,7 +29,7 @@ func NewApp(cfg *config.Manager) *App {
 	return &App{
 		Config: cfg,
 		Builder: builder.New(
-			filepath.Join("assets", "foil-example.apk"), // template APK
+			filepath.Join(AssetsDir(), "foil-example.apk"), // template APK
 			filepath.Join(os.Getenv("USERPROFILE"), "Desktop"), // default output: desktop
 			filepath.Join(appData, "keys"),
 			filepath.Join(appData, "builds"),

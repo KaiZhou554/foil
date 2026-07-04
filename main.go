@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -14,7 +15,70 @@ import (
 )
 
 //go:embed all:frontend/dist
-var assets embed.FS
+var frontendAssets embed.FS
+
+//go:embed all:assets
+var bundledAssets embed.FS
+
+// AssetsDir returns a usable assets directory path.
+// In dev mode (local assets/ exists) it returns "assets" directly.
+// In production it extracts embedded assets to a persistent cache dir.
+func AssetsDir() string {
+	local := "assets"
+	if info, err := os.Stat(local); err == nil && info.IsDir() {
+		return local
+	}
+
+	// Production: extract to %APPDATA%\unieditdept\foil\assets\
+	cacheDir := filepath.Join(os.Getenv("APPDATA"), "unieditdept", "foil", "assets")
+
+	// Check if already fully extracted by verifying key files
+	keyFiles := []string{
+		"foil-example.apk",
+		"apktool.jar",
+		filepath.Join("jre-minimal", "bin", "java.exe"),
+	}
+	allExist := true
+	for _, kf := range keyFiles {
+		if _, err := os.Stat(filepath.Join(cacheDir, kf)); err != nil {
+			allExist = false
+			break
+		}
+	}
+	if allExist {
+		return cacheDir
+	}
+
+	// Extract embedded assets
+	os.RemoveAll(cacheDir)
+	if err := extractEmbedFS(bundledAssets, "assets", cacheDir); err != nil {
+		// Fallback: try to use local assets/ anyway
+		return local
+	}
+	return cacheDir
+}
+
+// extractEmbedFS copies all files from an embedded filesystem path to destDir.
+func extractEmbedFS(fsys embed.FS, embedPath, destDir string) error {
+	return fs.WalkDir(fsys, embedPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, _ := filepath.Rel(embedPath, path)
+		target := filepath.Join(destDir, rel)
+		if d.IsDir() {
+			return os.MkdirAll(target, 0755)
+		}
+		data, err := fsys.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+			return err
+		}
+		return os.WriteFile(target, data, 0644)
+	})
+}
 
 func main() {
 	// Config file lives alongside the WebView user data directory
@@ -35,7 +99,7 @@ func main() {
 		Height:    720,
 		Frameless: true,
 		AssetServer: &assetserver.Options{
-			Assets: assets,
+			Assets: frontendAssets,
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		OnStartup:        app.startup,

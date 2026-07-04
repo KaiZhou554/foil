@@ -184,7 +184,7 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput } from '../../wailsjs/go/main/App'
-import { CheckmarkCircle24Regular } from '@vicons/fluent'
+import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
 import {
   NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard,
   NInputGroup, NCollapseItem, NCollapse,
