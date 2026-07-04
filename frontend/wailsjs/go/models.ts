@@ -30,6 +30,7 @@ export namespace config {
 	    firstLaunch: boolean;
 	    language: string;
 	    outputDir: string;
+	    showFloatButton: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -41,6 +42,7 @@ export namespace config {
 	        this.firstLaunch = source["firstLaunch"];
 	        this.language = source["language"];
 	        this.outputDir = source["outputDir"];
+	        this.showFloatButton = source["showFloatButton"];
 	    }
 	}
 

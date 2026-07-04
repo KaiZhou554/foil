@@ -1,6 +1,6 @@
 <template>
   <div class="h-full overflow-y-auto p-6">
-    <!-- Header -->
+      <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
         {{ t('buildPage.header') }}
@@ -167,22 +167,19 @@
         <span v-else>{{ t('buildPage.btnBuild') }}</span>
       </button>
 
-      <!-- 日志 -->
-      <div v-if="buildLog" class="bg-black/5 dark:bg-white/5 rounded-lg p-3">
-        <pre class="text-xs font-mono text-gray-600 dark:text-gray-400 whitespace-pre-wrap max-h-48 overflow-y-auto">{{ buildLog }}</pre>
-      </div>
-
-      <!-- 结果 -->
-      <div v-if="result" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm">
-        <p class="text-green-700 dark:text-green-300 font-medium">{{ t('buildPage.successTitle') }}</p>
-        <p class="text-green-600 dark:text-green-400 mt-1 font-mono text-xs">{{ result.APKPath }}</p>
-      </div>
-
-      <div v-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-sm">
-        <p class="text-red-700 dark:text-red-300 font-medium">{{ t('buildPage.failTitle') }}</p>
-        <p class="text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
-      </div>
     </div>
+
+    <!-- Float button -->
+    <n-tooltip v-if="appStore.showFloatButton" trigger="hover" placement="left">
+      <template #trigger>
+        <n-float-button :right="24" :bottom="24">
+          <n-icon>
+            <BookPulse24Regular />
+          </n-icon>
+        </n-float-button>
+      </template>
+      <span class="text-xs whitespace-pre-wrap" v-text="buildLog || t('buildPage.floatPlaceholder')" />
+    </n-tooltip>
   </div>
 </template>
 
@@ -190,13 +187,19 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput } from '../../wailsjs/go/main/App'
+import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
+import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
 import {
   NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard,
   NInputGroup, NCollapseItem, NCollapse,
+  NFloatButton, NTooltip,
+  useMessage,
 } from 'naive-ui'
 
 const { t } = useI18n()
+const appStore = useAppStore()
+const message = useMessage()
 
 // ── State ──
 const inputTab = ref('folder')
@@ -205,8 +208,6 @@ const filePath = ref('')
 const appName = ref('')
 const building = ref(false)
 const buildLog = ref('')
-const result = ref<{ APKPath: string; PackageName: string; VersionName: string; VersionCode: number } | null>(null)
-const error = ref('')
 
 // Package name segments
 const pkgSegment1 = ref('com')
@@ -321,8 +322,6 @@ async function buildAPK() {
 
   building.value = true
   buildLog.value = ''
-  result.value = null
-  error.value = ''
 
   try {
     let projectDir = ''
@@ -367,10 +366,12 @@ async function buildAPK() {
 
     buildLog.value += t('buildPage.logBuilding')
     const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value, icons)
-    result.value = { APKPath: res.APKPath, PackageName: res.PackageName, VersionName: res.VersionName, VersionCode: res.VersionCode }
     buildLog.value += res.Log || ''
+    message.success(t('buildPage.successTitle') + '\n' + res.APKPath, { duration: 4000, keepAliveOnHover: true })
   } catch (err: any) {
-    error.value = String(err?.message || err || '')
+    const msg = String(err?.message || err || '')
+    buildLog.value += msg + '\n'
+    message.error(t('buildPage.failTitle'), { duration: 5000, keepAliveOnHover: true })
   } finally {
     building.value = false
   }

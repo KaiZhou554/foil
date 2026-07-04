@@ -30,6 +30,7 @@ export default {
     locationCustom: '自定义',
     locationPlaceholder: '选择文件夹',
     btnBrowse: '浏览…',
+    showFloatButton: '显示日志',
   },
 
   titlebar: {
@@ -78,5 +79,6 @@ export default {
 
     logCustomPkg: '使用自定义包名：',
     logBuilding: '正在生成 APK...\n',
+    floatPlaceholder: '暂无构建记录',
   },
 }

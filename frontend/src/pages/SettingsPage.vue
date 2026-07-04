@@ -51,6 +51,11 @@
             </n-button>
           </div>
         </n-collapse-transition>
+
+        <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50 mt-3">
+          <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.showFloatButton') }}</span>
+          <n-switch :value="appStore.showFloatButton" @update:value="val => { appStore.showFloatButton = val; appStore.saveConfig() }" />
+        </div>
       </div>
     </section>
   </div>
@@ -59,7 +64,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NSelect, NRadio, NRadioGroup, NInput, NButton, NCollapseTransition } from 'naive-ui'
+import { NSelect, NRadio, NRadioGroup, NInput, NButton, NSwitch, NCollapseTransition } from 'naive-ui'
 import { useAppStore } from '@/stores/appStore'
 import { SelectOutputDir } from '../../wailsjs/go/main/App'
 

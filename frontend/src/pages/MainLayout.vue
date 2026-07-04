@@ -17,11 +17,13 @@
           class="h-full ml-12 bg-gray-50 dark:bg-gray-900 rounded-tl-md"
         >
           <n-scrollbar>
-            <router-view v-slot="{ Component, route }">
-              <transition :name="nestedTransition" mode="out-in">
-                <component :is="Component" :key="route.fullPath" />
-              </transition>
-            </router-view>
+            <n-message-provider>
+              <router-view v-slot="{ Component, route }">
+                <transition :name="nestedTransition" mode="out-in">
+                  <component :is="Component" :key="route.fullPath" />
+                </transition>
+              </router-view>
+            </n-message-provider>
           </n-scrollbar>
         </div>
       </div>
@@ -32,7 +34,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { NScrollbar } from 'naive-ui'
+import { NScrollbar, NMessageProvider } from 'naive-ui'
 import Sidebar from '@/components/Sidebar.vue'
 import { useAppStore } from '@/stores/appStore'
 

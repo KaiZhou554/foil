@@ -30,6 +30,7 @@ export default {
     locationCustom: 'Custom',
     locationPlaceholder: 'Select folder',
     btnBrowse: 'Browse…',
+    showFloatButton: 'Show Build Log',
   },
 
   titlebar: {
@@ -78,5 +79,6 @@ export default {
 
     logCustomPkg: 'Using custom package: ',
     logBuilding: 'Building APK...\n',
+    floatPlaceholder: 'No build yet',
   },
 }
