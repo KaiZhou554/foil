@@ -10,6 +10,10 @@ export function GeneratePackageName(arg1) {
   return window['go']['main']['App']['GeneratePackageName'](arg1);
 }
 
+export function GetAppVersion() {
+  return window['go']['main']['App']['GetAppVersion']();
+}
+
 export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }

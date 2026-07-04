@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -19,6 +20,26 @@ var frontendAssets embed.FS
 
 //go:embed all:assets
 var bundledAssets embed.FS
+
+//go:embed wails.json
+var wailsJSON []byte
+
+// AppVersion is the current application version, read from wails.json.
+var AppVersion string
+
+func init() {
+	var v struct {
+		Info struct {
+			ProductVersion string `json:"productVersion"`
+		} `json:"Info"`
+	}
+	if err := json.Unmarshal(wailsJSON, &v); err == nil {
+		AppVersion = v.Info.ProductVersion
+	}
+	if AppVersion == "" {
+		AppVersion = "0.0.0"
+	}
+}
 
 // AssetsDir returns a usable assets directory path.
 // In dev mode (local assets/ exists) it returns "assets" directly.

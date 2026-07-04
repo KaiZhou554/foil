@@ -71,7 +71,7 @@
       <div class="bg-white dark:bg-neutral-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4">
         <div class="flex items-center justify-between gap-4">
           <div class="text-sm text-neutral-500 leading-relaxed">
-            <strong class="text-neutral-700 dark:text-neutral-200">Foil</strong> · KaiZhou554 · v0.1.4<br>
+            <strong class="text-neutral-700 dark:text-neutral-200">Foil</strong> · KaiZhou554 · v{{ appVersion }}<br>
             {{ t('settings.aboutDesc') }}
           </div>
           <GitHubButton class="shrink-0" />
@@ -82,15 +82,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NSelect, NRadio, NRadioGroup, NInput, NButton, NSwitch, NCollapseTransition } from 'naive-ui'
 import { useAppStore } from '@/stores/appStore'
-import { SelectOutputDir } from '../../wailsjs/go/main/App'
+import { SelectOutputDir, GetAppVersion } from '../../wailsjs/go/main/App'
 import GitHubButton from '@/components/GitHubButton.vue'
 
 const { t, locale } = useI18n()
 const appStore = useAppStore()
+
+const appVersion = ref('')
+
+onMounted(async () => {
+  appVersion.value = await GetAppVersion()
+})
 
 const languageOptions = [
   { value: 'zh-CN', label: '中文' },

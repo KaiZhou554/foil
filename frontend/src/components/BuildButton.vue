@@ -9,13 +9,7 @@ License: MIT
       :disabled="disabled || building"
       @click="$emit('click')"
     >
-      <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
-        />
-      </svg>
+      <n-icon class="btn-svg" :component="Wand24Filled" />
 
       <div class="txt-wrapper">
         <div class="txt-1" :class="{ 'txt-hide': building }">
@@ -30,6 +24,9 @@ License: MIT
 </template>
 
 <script setup lang="ts">
+import { NIcon } from 'naive-ui'
+import Wand24Filled from '@vicons/fluent/es/Wand24Filled'
+
 defineProps<{
   disabled?: boolean
   building?: boolean
@@ -236,15 +233,14 @@ defineEmits<{
 /* ── SVG icon ── */
 .btn-svg {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  margin-right: 0.5rem;
-  fill: #e8e8e8;
+  margin-right: 0.2rem;
+  font-size: 20px;
+  color: #e8e8e8;
   animation: flicker 2s linear infinite;
   animation-delay: 0.5s;
   filter: drop-shadow(0 0 2px #fff9);
   transition:
-    fill var(--transition),
+    color var(--transition),
     filter var(--transition),
     opacity var(--transition);
 }
@@ -274,7 +270,7 @@ defineEmits<{
 }
 
 .btn:hover .btn-svg {
-  fill: #fff;
+  color: #fff;
   filter: drop-shadow(0 0 3px hsl(var(--highlight-color-hue), 100%, 70%))
     drop-shadow(0 -4px 6px #0009);
   animation: none;

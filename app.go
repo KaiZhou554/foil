@@ -187,6 +187,11 @@ func (a *App) OpenFolder(path string) {
 	exec.Command("explorer", path).Start()
 }
 
+// GetAppVersion returns the application version from wails.json.
+func (a *App) GetAppVersion() string {
+	return AppVersion
+}
+
 // BuildAPK runs the full build pipeline. Called from frontend via Wails bind.
 // projectDir: path to HTML project folder.
 // appName: user-visible app name.

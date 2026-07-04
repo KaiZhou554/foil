@@ -7,6 +7,8 @@ export function BuildAPK(arg1:string,arg2:string,arg3:string,arg4:string,arg5:Re
 
 export function GeneratePackageName(arg1:string):Promise<string>;
 
+export function GetAppVersion():Promise<string>;
+
 export function GetConfig():Promise<config.Config>;
 
 export function GetIconPaths():Promise<Array<string>>;
