@@ -23,7 +23,8 @@ type BuildInput struct {
 	ProjectDir   string            // path to HTML project (must contain index.html)
 	AppName      string            // user-visible app name
 	PackageName  string            // optional; empty = auto-generate
-	IconWebP     map[string][]byte // path -> webp bytes, e.g. "mipmap-hdpi-v4/ic_launcher.webp" -> data
+	VersionName  string            // optional version name (digits only); empty = auto-generate
+	IconWebP     map[string][]byte // path -> webp bytes, e.g. "mipmap-hdpi/ic_launcher.webp" -> data
 }
 
 // BuildResult describes what was produced.
@@ -100,7 +101,10 @@ func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
 	if pkgName == "" {
 		pkgName = GeneratePackageName(in.AppName, nil, oldPkgLen)
 	}
-	verName := GenerateVersionName()
+	verName := in.VersionName
+	if verName == "" {
+		verName = GenerateVersionName()
+	}
 	verCode := GenerateVersionCode()
 	b.logf("Package: %s (%d chars) | Version: %s (%d)", pkgName, len(pkgName), verName, verCode)
 

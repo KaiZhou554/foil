@@ -111,7 +111,7 @@
 
       <!-- 高级选项 -->
       <n-collapse>
-        <n-collapse-item title="高级选项 — 包名">
+        <n-collapse-item title="高级选项 — 包名 / 版本号">
           <div class="space-y-3">
             <n-input-group>
               <n-input
@@ -138,6 +138,15 @@
             </n-input-group>
             <div class="text-xs text-gray-400 font-mono">
               包名预览：{{ previewPkgName }}
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
+              <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1">自定义版本号（纯数字，留空自动生成）</label>
+              <n-input
+                v-model:value="versionName"
+                placeholder="例如 7 或 20240701"
+                :allow-input="onlyAllowDigits"
+                maxlength="20"
+              />
             </div>
           </div>
         </n-collapse-item>
@@ -205,6 +214,9 @@ const pkgSegment1 = ref('com')
 const pkgSegment2 = ref('')
 const pkgSegment3 = ref('')
 const lastSeg2 = ref('')
+
+// Custom version number (digits only)
+const versionName = ref('')
 
 // Icon
 const fileInputRef = ref<HTMLInputElement>()
@@ -287,6 +299,10 @@ function onlyAllowPkg(value: string) {
   return !value || /^[a-z0-9_.-]*$/.test(value)
 }
 
+function onlyAllowDigits(value: string) {
+  return !value || /^\d*$/.test(value)
+}
+
 function previewPkg() {
   // preview is updated reactively via computed property
 }
@@ -349,7 +365,7 @@ async function buildAPK() {
     }
 
     buildLog.value += '正在构建 APK...\n'
-    const res = await BuildAPK(projectDir, appName.value, icons)
+    const res = await BuildAPK(projectDir, appName.value, versionName.value, icons)
     result.value = { APKPath: res.APKPath, PackageName: res.PackageName, VersionName: res.VersionName, VersionCode: res.VersionCode }
     buildLog.value += res.Log || ''
   } catch (err: any) {
