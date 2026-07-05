@@ -11,7 +11,7 @@ type Config struct {
 	ShowFloatButton bool   `toml:"showFloatButton" json:"showFloatButton"`
 	OpenAfterBuild  bool   `toml:"openAfterBuild"  json:"openAfterBuild"`
 	UseCustomCert   bool   `toml:"useCustomCert"   json:"useCustomCert"`
-	RememberCert    bool   `toml:"rememberCert"    json:"rememberCert"`
+	RememberLevel   string `toml:"rememberLevel"   json:"rememberLevel"`
 }
 
 // Validate checks that the loaded configuration has sensible values.
@@ -34,6 +34,6 @@ func DefaultConfig() *Config {
 		ShowFloatButton: false,
 		OpenAfterBuild:  true,
 		UseCustomCert:   false,
-		RememberCert:    false,
+		RememberLevel:   "off",
 	}
 }

@@ -119,9 +119,15 @@
                       <n-checkbox :checked="!showKeyPassword" @update:checked="v => showKeyPassword = !v">
                         <span class="text-xs text-neutral-500">{{ t('advancedPage.keySameAsStore') }}</span>
                       </n-checkbox>
-                      <n-checkbox :checked="rememberCert" @update:checked="onRememberChange">
-                        <span class="text-xs text-neutral-500">{{ t('advancedPage.rememberCert') }}</span>
-                      </n-checkbox>
+                      <div class="flex items-center gap-2 pt-1">
+                        <span class="text-xs text-neutral-500">{{ t('advancedPage.remember') }}</span>
+                        <n-select
+                          v-model:value="rememberLevel"
+                          :options="rememberOptions"
+                          size="tiny"
+                          class="w-36"
+                        />
+                      </div>
                   </div>
                 </n-collapse-transition>
               </div>
@@ -137,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
@@ -214,7 +220,12 @@ const certPassword = ref('')
 const certAlias = ref('')
 const keyPassword = ref('')
 const showKeyPassword = ref(false)
-const rememberCert = ref(false)
+const rememberLevel = ref('off')
+const rememberOptions = [
+  { value: 'off', label: '' },
+  { value: 'path', label: '' },
+  { value: 'full', label: '' },
+]
 const aliasOptions = ref<{ label: string; value: string }[]>([])
 const loadingAliases = ref(false)
 
@@ -223,15 +234,18 @@ onMounted(async () => {
   if (appStore.useCustomCert) {
     certMode.value = 'custom'
   }
-  if (appStore.rememberCert) {
-    rememberCert.value = true
+  rememberLevel.value = appStore.rememberLevel || 'off'
+  
+  if (rememberLevel.value !== 'off') {
     const [path, pwd, alias, keyPwd] = await LoadCertInfo()
     if (path) {
       certPath.value = path
-      certPassword.value = pwd
-      certAlias.value = alias
-      keyPassword.value = keyPwd
-      if (path) tryDetectAliases(path, pwd)
+      if (rememberLevel.value === 'full') {
+        certPassword.value = pwd
+        certAlias.value = alias
+        keyPassword.value = keyPwd
+      }
+      if (path) tryDetectAliases(path, certPassword.value)
     }
   }
 })
@@ -242,14 +256,23 @@ function onCertModeChange(val: string) {
   appStore.saveConfig()
 }
 
-function onRememberChange(val: boolean) {
-  rememberCert.value = val
-  appStore.rememberCert = val
-  if (val && certPath.value) {
-    SaveCertInfo(certPath.value, certPassword.value, certAlias.value, keyPassword.value)
-  }
-  appStore.saveConfig()
+function persistCertInfo() {
+  if (rememberLevel.value === 'off' || !certPath.value) return
+  const savePwd = rememberLevel.value === 'full'
+  SaveCertInfo(
+    certPath.value,
+    savePwd ? certPassword.value : '',
+    savePwd ? certAlias.value : '',
+    savePwd ? keyPassword.value : '',
+  )
 }
+
+// Auto-save cert info when any field changes
+watch([certPath, certPassword, certAlias, keyPassword, rememberLevel], () => {
+  appStore.rememberLevel = rememberLevel.value
+  appStore.saveConfig()
+  persistCertInfo()
+})
 
 async function tryDetectAliases(path: string, pass: string) {
   if (!path || !pass) return

@@ -33,7 +33,7 @@ export namespace config {
 	    showFloatButton: boolean;
 	    openAfterBuild: boolean;
 	    useCustomCert: boolean;
-	    rememberCert: boolean;
+	    rememberLevel: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -48,7 +48,7 @@ export namespace config {
 	        this.showFloatButton = source["showFloatButton"];
 	        this.openAfterBuild = source["openAfterBuild"];
 	        this.useCustomCert = source["useCustomCert"];
-	        this.rememberCert = source["rememberCert"];
+	        this.rememberLevel = source["rememberLevel"];
 	    }
 	}
 
