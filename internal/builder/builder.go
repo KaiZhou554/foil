@@ -672,9 +672,7 @@ func (b *Builder) signWithApksigner(opts SigningOptions) error {
 // maskPasswords returns a copy of args with password values replaced by "***".
 func maskPasswords(args []string) string {
 	masked := make([]string, len(args))
-	for i, a := range args {
-		masked[i] = a
-	}
+	copy(masked, args)
 	for i := 0; i < len(masked); i++ {
 		if masked[i] == "--ks-pass" && i+1 < len(masked) {
 			masked[i+1] = "***"
