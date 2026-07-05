@@ -16,7 +16,7 @@ export function GetIconPaths():Promise<Array<string>>;
 
 export function ListKeystoreAliases(arg1:string,arg2:string):Promise<Array<string>>;
 
-export function LoadCertInfo():Promise<main.CertInfo | null>;
+export function LoadCertInfo():Promise<main.certInfo>;
 
 export function OpenFolder(arg1:string):Promise<void>;
 

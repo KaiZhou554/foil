@@ -6,11 +6,11 @@ export namespace builder {
 	    VersionName: string;
 	    VersionCode: number;
 	    Log: string;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new BuildResult(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.APKPath = source["APKPath"];
@@ -18,29 +18,6 @@ export namespace builder {
 	        this.VersionName = source["VersionName"];
 	        this.VersionCode = source["VersionCode"];
 	        this.Log = source["Log"];
-	    }
-	}
-
-}
-
-export namespace main {
-	
-	export class CertInfo {
-	    certPath: string;
-	    certPassword: string;
-	    certAlias: string;
-	    keyPassword: string;
-
-	    static createFrom(source: any = {}) {
-	        return new CertInfo(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.certPath = source["certPath"];
-	        this.certPassword = source["certPassword"];
-	        this.certAlias = source["certAlias"];
-	        this.keyPassword = source["keyPassword"];
 	    }
 	}
 
@@ -74,6 +51,29 @@ export namespace config {
 	        this.useCustomCert = source["useCustomCert"];
 	        this.rememberLevel = source["rememberLevel"];
 	        this.keyPassSameAsStore = source["keyPassSameAsStore"];
+	    }
+	}
+
+}
+
+export namespace main {
+	
+	export class certInfo {
+	    certPath: string;
+	    certPassword: string;
+	    certAlias: string;
+	    keyPassword: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new certInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.certPath = source["certPath"];
+	        this.certPassword = source["certPassword"];
+	        this.certAlias = source["certAlias"];
+	        this.keyPassword = source["keyPassword"];
 	    }
 	}
 

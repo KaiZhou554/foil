@@ -100,6 +100,7 @@ export default {
     rememberOff: 'Off',
     rememberPath: 'Path only',
     rememberFull: 'Path & Password',
+    rememberTooltip: 'Choose whether to remember certificate path and passwords for next launch',
     aliasPlaceholder: 'Select or enter Alias…',
     keyPasswordPlaceholder: 'Key password (optional)',
     keySameAsStore: 'Key password same as Keystore',

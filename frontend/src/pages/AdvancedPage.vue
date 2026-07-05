@@ -115,16 +115,22 @@
                       type="password"
                       show-password-on="click"
                     />
-                    <n-space justify="end" align="center">
-                      <n-space align="center" :size="8">
-                        <span class="text-neutral-500">{{ t('advancedPage.remember') }}</span>
-                        <n-select
-                          v-model:value="rememberLevel"
-                          :options="rememberOptions"
-                          class="w-44"
-                        />
-                      </n-space>
-                    </n-space>
+                    <n-divider />
+                    <div class="flex items-center justify-end gap-2">
+                      <n-icon :component="Save24Regular" size="18" class="text-neutral-400" />
+                      <span class="text-neutral-500 shrink-0">{{ t('advancedPage.remember') }}</span>
+                      <n-tooltip trigger="hover" placement="top">
+                        <template #trigger>
+                          <n-icon :component="Info16Regular" size="16" class="text-neutral-400 cursor-help" />
+                        </template>
+                        <span>{{ t('advancedPage.rememberTooltip') }}</span>
+                      </n-tooltip>
+                      <n-select
+                        v-model:value="rememberLevel"
+                        :options="rememberOptions"
+                        class="w-36"
+                      />
+                    </div>
                   </div>
                 </n-collapse-transition>
               </div>
@@ -145,7 +151,9 @@ import { useI18n } from 'vue-i18n'
 import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases, SetCustomCert } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NSpace, NCollapseTransition, useMessage, NMessageProvider } from 'naive-ui'
+import Save24Regular from '@vicons/fluent/es/Save24Regular'
+import Info16Regular from '@vicons/fluent/es/Info16Regular'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NSpace, NCollapseTransition, NDivider, NTooltip, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()

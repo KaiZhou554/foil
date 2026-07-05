@@ -100,6 +100,7 @@ export default {
     rememberOff: '不记住',
     rememberPath: '仅路径',
     rememberFull: '路径和密码',
+    rememberTooltip: '选择是否记住证书路径和密码，下次打开自动填入',
     aliasPlaceholder: '选择或输入 Alias…',
     keyPasswordPlaceholder: 'Key 密码（可选）',
     keySameAsStore: 'Key 密码与 Keystore 相同',
