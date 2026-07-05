@@ -38,27 +38,32 @@ func saveCertInfo(certPath, certPassword, certAlias, keyPassword string) error {
 	if err != nil {
 		return err
 	}
+	// Ensure storage directory exists
+	storageDir := filepath.Dir(certStoragePath())
+	if err := os.MkdirAll(storageDir, 0700); err != nil {
+		return err
+	}
 	return os.WriteFile(certStoragePath(), encrypted, 0600)
 }
 
 // loadCertInfo reads and decrypts cert credentials from disk.
-func loadCertInfo() (certPath, certPassword, certAlias, keyPassword string, err error) {
+func loadCertInfo() (*certInfo, error) {
 	encrypted, err := os.ReadFile(certStoragePath())
 	if err != nil {
 		if os.IsNotExist(err) {
-			return "", "", "", "", nil
+			return &certInfo{}, nil
 		}
-		return "", "", "", "", err
+		return nil, err
 	}
 	decrypted, err := dpapi.Unprotect(encrypted)
 	if err != nil {
-		return "", "", "", "", err
+		return nil, err
 	}
 	var info certInfo
 	if err := json.Unmarshal(decrypted, &info); err != nil {
-		return "", "", "", "", err
+		return nil, err
 	}
-	return info.CertPath, info.CertPassword, info.CertAlias, info.KeyPassword, nil
+	return &info, nil
 }
 
 // clearCertInfo removes the encrypted cert info file.

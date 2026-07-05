@@ -104,27 +104,24 @@
                       v-model:value="certAlias"
                       :options="aliasOptions"
                       :placeholder="t('advancedPage.aliasPlaceholder')"
+                      class="w-full"
                       filterable
                       tag
                       clearable
                     />
                     <n-input
-                      v-if="showKeyPassword"
                       v-model:value="keyPassword"
                       :placeholder="t('advancedPage.keyPasswordPlaceholder')"
                       type="password"
                       show-password-on="click"
                     />
-                    <n-space justify="space-between" align="center">
-                      <n-checkbox :checked="!showKeyPassword" @update:checked="v => { showKeyPassword = !v; if (!v) keyPassword = ''; appStore.keyPassSameAsStore = v; appStore.saveConfig() }">
-                        <span class="text-neutral-500">{{ t('advancedPage.keySameAsStore') }}</span>
-                      </n-checkbox>
+                    <n-space justify="end" align="center">
                       <n-space align="center" :size="8">
                         <span class="text-neutral-500">{{ t('advancedPage.remember') }}</span>
                         <n-select
                           v-model:value="rememberLevel"
                           :options="rememberOptions"
-                          :style="{ maxWidth: '130px' }"
+                          class="w-44"
                         />
                       </n-space>
                     </n-space>
@@ -148,7 +145,7 @@ import { useI18n } from 'vue-i18n'
 import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases, SetCustomCert } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NCheckbox, NSelect, NSpace, NCollapseTransition, useMessage, NMessageProvider } from 'naive-ui'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NSpace, NCollapseTransition, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()
@@ -219,7 +216,6 @@ const certPath = ref('')
 const certPassword = ref('')
 const certAlias = ref('')
 const keyPassword = ref('')
-const showKeyPassword = ref(false)
 const rememberLevel = ref('off')
 const rememberOptions = ref([
   { value: 'off', label: '' },
@@ -245,18 +241,17 @@ onMounted(async () => {
     certMode.value = 'custom'
   }
   rememberLevel.value = appStore.rememberLevel || 'off'
-  showKeyPassword.value = !appStore.keyPassSameAsStore
 
   if (rememberLevel.value !== 'off') {
-    const [path, pwd, alias, keyPwd] = await LoadCertInfo()
-    if (path) {
-      certPath.value = path
+    const info = await LoadCertInfo()
+    if (info && info.certPath) {
+      certPath.value = info.certPath
       if (rememberLevel.value === 'full') {
-        certPassword.value = pwd
-        certAlias.value = alias
-        keyPassword.value = keyPwd
+        certPassword.value = info.certPassword
+        certAlias.value = info.certAlias
+        keyPassword.value = info.keyPassword
       }
-      if (path) tryDetectAliases(path, certPassword.value)
+      tryDetectAliases(info.certPath, certPassword.value)
     }
   }
 })
@@ -267,15 +262,19 @@ function onCertModeChange(val: string) {
   appStore.saveConfig()
 }
 
-function persistCertInfo() {
+async function persistCertInfo() {
   if (rememberLevel.value === 'off' || !certPath.value) return
   const savePwd = rememberLevel.value === 'full'
-  SaveCertInfo(
-    certPath.value,
-    savePwd ? certPassword.value : '',
-    savePwd ? certAlias.value : '',
-    savePwd ? keyPassword.value : '',
-  )
+  try {
+    await SaveCertInfo(
+      certPath.value,
+      savePwd ? certPassword.value : '',
+      savePwd ? certAlias.value : '',
+      savePwd ? keyPassword.value : '',
+    )
+  } catch (e) {
+    console.warn('Failed to save cert info:', e)
+  }
 }
 
 // Auto-save cert info when any field changes

@@ -223,7 +223,7 @@ func (a *App) SaveCertInfo(certPath, certPassword, certAlias, keyPassword string
 }
 
 // LoadCertInfo reads and decrypts cert credentials from disk.
-func (a *App) LoadCertInfo() (string, string, string, string, error) {
+func (a *App) LoadCertInfo() (*certInfo, error) {
 	return loadCertInfo()
 }
 
