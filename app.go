@@ -22,6 +22,11 @@ type App struct {
 	ctx     context.Context
 	Config  *config.Manager
 	Builder *builder.Builder
+
+	customCertPath     string
+	customCertPassword string
+	customCertAlias    string
+	customKeyPassword  string
 }
 
 // NewApp creates a new App application struct.
@@ -206,6 +211,14 @@ func (a *App) GetAppVersion() string {
 	return AppVersion
 }
 
+// SetCustomCert stores custom certificate info for the next build.
+func (a *App) SetCustomCert(certPath, certPassword, certAlias, keyPassword string) {
+	a.customCertPath = certPath
+	a.customCertPassword = certPassword
+	a.customCertAlias = certAlias
+	a.customKeyPassword = keyPassword
+}
+
 // SaveCertInfo encrypts and persists cert credentials to disk.
 func (a *App) SaveCertInfo(certPath, certPassword, certAlias, keyPassword string) error {
 	return saveCertInfo(certPath, certPassword, certAlias, keyPassword)
@@ -246,6 +259,10 @@ func (a *App) BuildAPK(projectDir, appName, packageName, versionName string, ico
 		PackageName: packageName,
 		VersionName: versionName,
 		IconWebP:    icons,
+		CertPath:     a.customCertPath,
+		CertPassword: a.customCertPassword,
+		CertAlias:    a.customCertAlias,
+		KeyPassword:  a.customKeyPassword,
 	})
 }
 

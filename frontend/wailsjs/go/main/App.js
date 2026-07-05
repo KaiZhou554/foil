@@ -42,6 +42,10 @@ export function SaveCertInfo(arg1, arg2, arg3, arg4) {
   return window['go']['main']['App']['SaveCertInfo'](arg1, arg2, arg3, arg4);
 }
 
+export function SetCustomCert(arg1, arg2, arg3, arg4) {
+  return window['go']['main']['App']['SetCustomCert'](arg1, arg2, arg3, arg4);
+}
+
 export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }

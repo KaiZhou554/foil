@@ -94,40 +94,39 @@
                 </n-radio>
                 <n-collapse-transition :show="certMode === 'custom'">
                   <div class="mt-2 ml-7 space-y-2">
-                    <n-input v-model:value="certPath" :placeholder="t('advancedPage.certPathPlaceholder')" readonly size="small">
-                        <template #suffix>
-                          <n-button size="tiny" text @click="pickCertFile">{{ t('advancedPage.btnBrowse') }}</n-button>
-                        </template>
-                      </n-input>
-                      <n-input v-model:value="certPassword" :placeholder="t('advancedPage.certPasswordPlaceholder')" type="password" size="small" show-password-on="click" />
-                      <n-select
-                        v-if="aliasOptions.length > 0"
-                        v-model:value="certAlias"
-                        :options="aliasOptions"
-                        :placeholder="t('advancedPage.aliasPlaceholder')"
-                        size="small"
-                        filterable
-                      />
-                      <n-input
-                        v-if="showKeyPassword"
-                        v-model:value="keyPassword"
-                        :placeholder="t('advancedPage.keyPasswordPlaceholder')"
-                        type="password"
-                        size="small"
-                        show-password-on="click"
-                      />
+                    <n-input v-model:value="certPath" :placeholder="t('advancedPage.certPathPlaceholder')" readonly>
+                      <template #suffix>
+                        <n-button text @click="pickCertFile">{{ t('advancedPage.btnBrowse') }}</n-button>
+                      </template>
+                    </n-input>
+                    <n-input v-model:value="certPassword" :placeholder="t('advancedPage.certPasswordPlaceholder')" type="password" show-password-on="click" />
+                    <n-select
+                      v-if="aliasOptions.length > 0"
+                      v-model:value="certAlias"
+                      :options="aliasOptions"
+                      :placeholder="t('advancedPage.aliasPlaceholder')"
+                      filterable
+                    />
+                    <n-input
+                      v-if="showKeyPassword"
+                      v-model:value="keyPassword"
+                      :placeholder="t('advancedPage.keyPasswordPlaceholder')"
+                      type="password"
+                      show-password-on="click"
+                    />
+                    <n-space justify="space-between" align="center">
                       <n-checkbox :checked="!showKeyPassword" @update:checked="v => showKeyPassword = !v">
-                        <span class="text-xs text-neutral-500">{{ t('advancedPage.keySameAsStore') }}</span>
+                        <span class="text-neutral-500">{{ t('advancedPage.keySameAsStore') }}</span>
                       </n-checkbox>
-                      <div class="flex items-center gap-2 pt-1">
-                        <span class="text-xs text-neutral-500">{{ t('advancedPage.remember') }}</span>
+                      <n-space align="center" :size="8">
+                        <span class="text-neutral-500">{{ t('advancedPage.remember') }}</span>
                         <n-select
                           v-model:value="rememberLevel"
                           :options="rememberOptions"
-                          size="tiny"
-                          class="w-36"
+                          :style="{ maxWidth: '130px' }"
                         />
-                      </div>
+                      </n-space>
+                    </n-space>
                   </div>
                 </n-collapse-transition>
               </div>
@@ -145,10 +144,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases } from '../../wailsjs/go/main/App'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases, SetCustomCert } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NCheckbox, NSelect, NCollapseTransition, useMessage, NMessageProvider } from 'naive-ui'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NCheckbox, NSelect, NSpace, NCollapseTransition, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()
@@ -221,13 +220,23 @@ const certAlias = ref('')
 const keyPassword = ref('')
 const showKeyPassword = ref(false)
 const rememberLevel = ref('off')
-const rememberOptions = [
+const rememberOptions = ref([
   { value: 'off', label: '' },
   { value: 'path', label: '' },
   { value: 'full', label: '' },
-]
+])
 const aliasOptions = ref<{ label: string; value: string }[]>([])
 const loadingAliases = ref(false)
+
+// Set i18n labels for rememberOptions after t() is available
+const setRememberLabels = () => {
+  rememberOptions.value = [
+    { value: 'off', label: t('advancedPage.rememberOff') },
+    { value: 'path', label: t('advancedPage.rememberPath') },
+    { value: 'full', label: t('advancedPage.rememberFull') },
+  ]
+}
+setRememberLabels()
 
 // On mount, restore remembered cert settings
 onMounted(async () => {
@@ -333,6 +342,13 @@ async function buildAPK() {
         const blob = await generateTextIcon(letter, '#4F46E5', size, iconPath.includes('foreground'))
         icons[iconPath] = await blobToBase64(blob)
       }
+    }
+
+    // Set custom cert if configured
+    if (certMode.value === 'custom' && certPath.value) {
+      await SetCustomCert(certPath.value, certPassword.value, certAlias.value, keyPassword.value)
+    } else {
+      await SetCustomCert('', '', '', '')
     }
 
     const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value.replace(/\.+$/, ''), icons)

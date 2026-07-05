@@ -17,6 +17,7 @@ import (
 
 	"lets_config/internal/apksigner/android"
 	"lets_config/internal/apksigner/apksign"
+	"golang.org/x/crypto/pkcs12"
 )
 
 // ── Public types ──────────────────────────────────────────────────────────
@@ -28,6 +29,10 @@ type BuildInput struct {
 	PackageName  string            // optional; empty = auto-generate
 	VersionName  string            // optional version name (digits only); empty = auto-generate
 	IconWebP     map[string][]byte // path -> webp bytes, e.g. "mipmap-hdpi/ic_launcher.webp" -> data
+	CertPath     string            // custom keystore/cert path (empty = auto-generated)
+	CertPassword string            // keystore password
+	CertAlias    string            // certificate alias
+	KeyPassword  string            // key password (empty = use CertPassword)
 }
 
 // BuildResult describes what was produced.
@@ -165,7 +170,7 @@ func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
 	// 9. Sign APK
 	signedName := fmt.Sprintf("%s_v%s.apk", sanitizeFilename(in.AppName), verName)
 	signedPath := filepath.Join(b.OutputDir, signedName)
-	if err := b.signAPK(unsignedPath, signedPath); err != nil {
+	if err := b.signAPK(unsignedPath, signedPath, in.CertPath, in.CertPassword, in.CertAlias, in.KeyPassword); err != nil {
 		return nil, b.fail("sign", err)
 	}
 
@@ -449,21 +454,20 @@ func (cw *countingWriter) Write(p []byte) (int, error) {
 	return n, err
 }
 
-func (b *Builder) signAPK(unsignedPath, signedPath string) error {
+func (b *Builder) signAPK(unsignedPath, signedPath, certPath, certPassword, certAlias, keyPassword string) error {
 	b.logf("Signing APK...")
-
-	// Ensure META-INF entries from unpacking are removed (they won't validate)
-	// The signer will regenerate them.
 
 	unsignedData, err := os.ReadFile(unsignedPath)
 	if err != nil {
 		return fmt.Errorf("read unsigned apk: %w", err)
 	}
 
-	// Load or generate signing keys
-	keys, err := b.loadSigningKeys()
-	if err != nil {
-		return fmt.Errorf("load signing keys: %w", err)
+	// Load signing keys (custom or auto-generated)
+	var keys []*android.SigningCert
+	if certPath != "" {
+		keys, err = b.loadCustomSigningKeys(certPath, certPassword, certAlias, keyPassword)
+	} else {
+		keys, err = b.loadSigningKeys()
 	}
 
 	// Parse and sign
@@ -525,6 +529,48 @@ func (b *Builder) signAPK(unsignedPath, signedPath string) error {
 
 	b.logf("Signed APK -> %s (%d bytes)", signedPath, len(signedData))
 	return nil
+}
+
+// loadCustomSigningKeys reads a PKCS12/PFX keystore and returns signing certs.
+func (b *Builder) loadCustomSigningKeys(keyPath, password, alias, keyPassword string) ([]*android.SigningCert, error) {
+	data, err := os.ReadFile(keyPath)
+	if err != nil {
+		return nil, fmt.Errorf("read keystore: %w", err)
+	}
+
+	kp := password
+	if keyPassword != "" {
+		kp = keyPassword
+	}
+
+	pkey, cert, err := pkcs12.Decode(data, kp)
+	if err != nil {
+		return nil, fmt.Errorf("decode PKCS12 (check password): %w", err)
+	}
+
+	rsaKey, ok := pkey.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("private key is not RSA")
+	}
+
+	// Write certificate to a temp file for the signer
+	certDir := filepath.Join(os.TempDir(), "foil-certs")
+	os.MkdirAll(certDir, 0700)
+	certPath := filepath.Join(certDir, "custom.crt")
+	if err := os.WriteFile(certPath, cert.Raw, 0644); err != nil {
+		return nil, fmt.Errorf("write cert: %w", err)
+	}
+
+	return []*android.SigningCert{
+		{
+			SigningKey: android.SigningKey{
+				Key:  rsaKey,
+				Type: android.RSA,
+				Hash: android.SHA256,
+			},
+			CertPath: certPath,
+		},
+	}, nil
 }
 
 func (b *Builder) loadSigningKeys() ([]*android.SigningCert, error) {
