@@ -155,7 +155,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases, SetCustomCert, OpenFolder } from '../../wailsjs/go/main/App'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases, SetCustomCert, OpenFolder, GeneratePackageName } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
 import KeyMultiple20Filled from '@vicons/fluent/es/KeyMultiple20Filled'
@@ -360,13 +360,22 @@ async function buildAPK() {
     else projectDir = await PrepareFileInput(filePath.value)
 
     const seg1 = pkgSegment1.value || 'com'
-    const seg2 = pkgSegment2.value || 'app'
-    let customPkg = `${seg1}.${seg2}`
-    if (pkgSegment3.value) {
-      customPkg += `.${pkgSegment3.value}`
+
+    let customPkg: string
+    if (pkgSegment2.value && pkgSegment3.value) {
+      customPkg = `${seg1}.${pkgSegment2.value}.${pkgSegment3.value}`
+    } else if (pkgSegment2.value && !pkgSegment3.value) {
+      const randomPkg = await GeneratePackageName(appName.value)
+      const seg = randomPkg.split('.').pop()!
+      customPkg = `${seg1}.${pkgSegment2.value}.${seg}`
+    } else if (!pkgSegment2.value && pkgSegment3.value) {
+      const randomPkg = await GeneratePackageName(appName.value)
+      const seg = randomPkg.split('.').pop()!
+      customPkg = `${seg1}.${pkgSegment3.value}${seg}`
     } else {
-      // Empty third segment → let backend auto-generate
-      customPkg = ''
+      const randomPkg = await GeneratePackageName(appName.value)
+      const seg = randomPkg.split('.').pop()!
+      customPkg = `${seg1}.${seg}`
     }
 
     const iconPaths = await GetIconPaths()

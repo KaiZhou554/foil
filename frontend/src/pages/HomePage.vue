@@ -179,7 +179,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput, OpenFolder } from '../../wailsjs/go/main/App'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput, OpenFolder, GeneratePackageName } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
 import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
@@ -349,12 +349,22 @@ async function buildAPK() {
     }
 
     const seg1 = pkgSegment1.value || 'com'
-    const seg2 = pkgSegment2.value || 'app'
-    let customPkg = `${seg1}.${seg2}`
-    if (pkgSegment3.value) {
-      customPkg += `.${pkgSegment3.value}`
+
+    let customPkg: string
+    if (pkgSegment2.value && pkgSegment3.value) {
+      customPkg = `${seg1}.${pkgSegment2.value}.${pkgSegment3.value}`
+    } else if (pkgSegment2.value && !pkgSegment3.value) {
+      const randomPkg = await GeneratePackageName(appName.value)
+      const seg = randomPkg.split('.').pop()!
+      customPkg = `${seg1}.${pkgSegment2.value}.${seg}`
+    } else if (!pkgSegment2.value && pkgSegment3.value) {
+      const randomPkg = await GeneratePackageName(appName.value)
+      const seg = randomPkg.split('.').pop()!
+      customPkg = `${seg1}.${pkgSegment3.value}${seg}`
     } else {
-      customPkg = ''
+      const randomPkg = await GeneratePackageName(appName.value)
+      const seg = randomPkg.split('.').pop()!
+      customPkg = `${seg1}.${seg}`
     }
     if (customPkg) {
       buildLog.value += `${t('buildPage.logCustomPkg')}${customPkg}\n`
