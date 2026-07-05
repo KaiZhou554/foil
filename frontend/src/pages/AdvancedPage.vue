@@ -119,17 +119,17 @@
                     <div class="flex items-center justify-end gap-2">
                       <n-icon :component="Save24Regular" size="18" class="text-neutral-400" />
                       <span class="text-neutral-500 shrink-0">{{ t('advancedPage.remember') }}</span>
-                      <n-tooltip trigger="hover" placement="top">
-                        <template #trigger>
-                          <n-icon :component="Info16Regular" size="16" class="text-neutral-400 cursor-help" />
-                        </template>
-                        <span>{{ t('advancedPage.rememberTooltip') }}</span>
-                      </n-tooltip>
                       <n-select
                         v-model:value="rememberLevel"
                         :options="rememberOptions"
                         class="w-36"
                       />
+                      <n-tooltip trigger="hover" placement="top" style="max-width: 300px">
+                        <template #trigger>
+                          <n-icon :component="Info16Regular" size="16" class="text-neutral-400 cursor-help" />
+                        </template>
+                        <span v-html="t('advancedPage.rememberTooltip')"></span>
+                      </n-tooltip>
                     </div>
                   </div>
                 </n-collapse-transition>
