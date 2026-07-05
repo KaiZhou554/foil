@@ -91,9 +91,6 @@ func (a *App) SelectFile() string {
 func (a *App) SelectCertFile() string {
 	file, err := wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
 		Title: "选择证书文件",
-		Filters: []wailsRuntime.FileFilter{
-			{DisplayName: "Keystore / 证书", Pattern: "*.keystore;*.jks;*.pfx;*.p12;*.key;*.crt"},
-		},
 	})
 	if err != nil || file == "" {
 		return ""

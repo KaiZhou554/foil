@@ -34,6 +34,7 @@ export namespace config {
 	    openAfterBuild: boolean;
 	    useCustomCert: boolean;
 	    rememberLevel: string;
+	    keyPassSameAsStore: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -49,6 +50,7 @@ export namespace config {
 	        this.openAfterBuild = source["openAfterBuild"];
 	        this.useCustomCert = source["useCustomCert"];
 	        this.rememberLevel = source["rememberLevel"];
+	        this.keyPassSameAsStore = source["keyPassSameAsStore"];
 	    }
 	}
 
