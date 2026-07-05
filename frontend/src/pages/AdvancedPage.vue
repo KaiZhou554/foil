@@ -142,18 +142,31 @@
         <BuildButton :disabled="!canBuild || building" :building="building" :idle-text="t('buildPage.btnBuild')" :busy-text="t('buildPage.btnBuilding')" @click="buildAPK" />
       </div>
     </n-message-provider>
+
+    <!-- Float button -->
+    <n-tooltip v-if="appStore.showFloatButton" trigger="hover" placement="left">
+      <template #trigger>
+        <n-float-button :right="24" :bottom="24">
+          <n-icon>
+            <BookPulse24Regular />
+          </n-icon>
+        </n-float-button>
+      </template>
+      <span class="text-xs whitespace-pre-wrap" v-text="buildLog || t('buildPage.floatPlaceholder')" />
+    </n-tooltip>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases, SetCustomCert } from '../../wailsjs/go/main/App'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases, SetCustomCert, OpenFolder } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
 import Save24Regular from '@vicons/fluent/es/Save24Regular'
 import Info16Regular from '@vicons/fluent/es/Info16Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NSpace, NCollapseTransition, NDivider, NTooltip, useMessage, NMessageProvider } from 'naive-ui'
+import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NSpace, NCollapseTransition, NDivider, NTooltip, NFloatButton, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()
@@ -166,6 +179,7 @@ const projectPath = ref('')
 const filePath = ref('')
 const appName = ref('')
 const building = ref(false)
+const buildLog = ref('')
 
 const sourceStatus = computed(() => {
   if (projectPath.value) return 'Folder'
@@ -344,15 +358,24 @@ async function buildAPK() {
 
     const iconPaths = await GetIconPaths()
     const icons: Record<string, string> = {}
-    for (const iconPath of iconPaths) {
-      const size = 48 // simplified
-      if (customIconData.value) {
-        const blob = await resizeImage(customIconData.value, size, iconPath.includes('foreground'))
-        icons[iconPath] = await blobToBase64(blob)
-      } else {
-        const letter = appName.value.charAt(0).toUpperCase()
-        const blob = await generateTextIcon(letter, '#4F46E5', size, iconPath.includes('foreground'))
-        icons[iconPath] = await blobToBase64(blob)
+    if (customIconData.value) {
+      for (const iconPath of iconPaths) {
+        const size = extractIconSize(iconPath)
+        if (size > 0) {
+          const blob = await resizeImage(customIconData.value, size, iconPath.includes('foreground'))
+          icons[iconPath] = await blobToBase64(blob)
+        }
+      }
+    } else {
+      const letter = appName.value.charAt(0).toUpperCase()
+      const colors = ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444']
+      const colorIndex = appName.value.charCodeAt(0) % colors.length
+      for (const iconPath of iconPaths) {
+        const size = extractIconSize(iconPath)
+        if (size > 0) {
+          const blob = await generateTextIcon(letter, colors[colorIndex], size, iconPath.includes('foreground'))
+          icons[iconPath] = await blobToBase64(blob)
+        }
       }
     }
 
@@ -364,7 +387,12 @@ async function buildAPK() {
     }
 
     const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value.replace(/\.+$/, ''), icons)
+    buildLog.value += res.Log || ''
     message.success(t('buildPage.successTitle') + '\n' + res.APKPath, { duration: 4000, keepAliveOnHover: true })
+    if (appStore.openAfterBuild) {
+      const dir = res.APKPath.substring(0, res.APKPath.lastIndexOf('\\'))
+      if (dir) OpenFolder(dir)
+    }
   } catch (err: any) {
     const msg = String(err?.message || err || '')
     let errHint: string
@@ -381,45 +409,108 @@ async function buildAPK() {
   }
 }
 
-// ── Helpers (simplified) ──
-function resizeImage(dataUrl: string, size: number, _fg: boolean): Promise<Blob> {
-  return new Promise((res, rej) => {
-    const img = new Image()
-    img.onload = () => {
-      const c = document.createElement('canvas')
-      c.width = size; c.height = size
-      const ctx = c.getContext('2d')!
-      const min = Math.min(img.width, img.height)
-      ctx.drawImage(img, (img.width - min) / 2, (img.height - min) / 2, min, min, 0, 0, size, size)
-      c.toBlob(b => b ? res(b) : rej(new Error('WebP failed')), 'image/webp', 0.9)
+// ── Icon generation helpers ──
+
+function extractIconSize(path: string): number {
+  const sizes: Record<string, number> = { mdpi: 48, hdpi: 72, xhdpi: 96, xxhdpi: 144, xxxhdpi: 192 }
+  for (const [key, sz] of Object.entries(sizes)) {
+    if (path.includes(key)) {
+      return path.includes('foreground') ? Math.round(sz * (108 / 48)) : sz
     }
-    img.onerror = () => rej(new Error('Load failed'))
-    img.src = dataUrl
-  })
+  }
+  return 0
 }
 
-function generateTextIcon(letter: string, bg: string, size: number, _fg: boolean): Promise<Blob> {
-  return new Promise((res, rej) => {
-    const c = document.createElement('canvas')
-    c.width = size; c.height = size
-    const ctx = c.getContext('2d')!
-    ctx.fillStyle = bg
-    ctx.fillRect(0, 0, size, size)
-    ctx.fillStyle = '#fff'
-    ctx.font = `bold ${size * 0.5}px sans-serif`
+function generateTextIcon(letter: string, bgColor: string, size: number, isForeground: boolean): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = size
+    canvas.height = size
+    const ctx = canvas.getContext('2d')!
+    const half = size / 2
+    const radius = size * 0.22
+
+    ctx.clearRect(0, 0, size, size)
+
+    if (!isForeground) {
+      ctx.fillStyle = bgColor
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(size - radius, 0)
+      ctx.quadraticCurveTo(size, 0, size, radius)
+      ctx.lineTo(size, size - radius)
+      ctx.quadraticCurveTo(size, size, size - radius, size)
+      ctx.lineTo(radius, size)
+      ctx.quadraticCurveTo(0, size, 0, size - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.fill()
+    } else {
+      ctx.fillStyle = bgColor
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(size - radius, 0)
+      ctx.quadraticCurveTo(size, 0, size, radius)
+      ctx.lineTo(size, size - radius)
+      ctx.quadraticCurveTo(size, size, size - radius, size)
+      ctx.lineTo(radius, size)
+      ctx.quadraticCurveTo(0, size, 0, size - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.fill()
+    }
+
+    ctx.fillStyle = '#FFFFFF'
+    const fontSize = Math.round(size * 0.5)
+    ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(letter, size / 2, size / 2)
-    c.toBlob(b => b ? res(b) : rej(new Error('WebP failed')), 'image/webp', 0.9)
+    ctx.fillText(letter, half, half + 1)
+
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob)
+      else reject(new Error('WebP encoding failed'))
+    }, 'image/webp', 0.9)
   })
 }
 
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((res, rej) => {
-    const r = new FileReader()
-    r.onload = () => { const s = r.result as string; res(s.substring(s.indexOf(',') + 1)) }
-    r.onerror = () => rej(new Error('Failed'))
-    r.readAsDataURL(blob)
+function resizeImage(dataUrl: string, size: number, _isForeground: boolean): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')!
+      ctx.clearRect(0, 0, size, size)
+
+      const radius = size * 0.22
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(size - radius, 0)
+      ctx.quadraticCurveTo(size, 0, size, radius)
+      ctx.lineTo(size, size - radius)
+      ctx.quadraticCurveTo(size, size, size - radius, size)
+      ctx.lineTo(radius, size)
+      ctx.quadraticCurveTo(0, size, 0, size - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.clip()
+
+      const min = Math.min(img.width, img.height)
+      const sx = (img.width - min) / 2
+      const sy = (img.height - min) / 2
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size)
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob)
+        else reject(new Error('WebP encoding failed'))
+      }, 'image/webp', 0.9)
+    }
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = dataUrl
   })
 }
 </script>
