@@ -100,14 +100,9 @@
                       </template>
                     </n-input>
                     <n-input v-model:value="certPassword" :placeholder="t('advancedPage.certPasswordPlaceholder')" type="password" show-password-on="click" />
-                    <n-select
+                    <n-input
                       v-model:value="certAlias"
-                      :options="aliasOptions"
                       :placeholder="t('advancedPage.aliasPlaceholder')"
-                      class="w-full"
-                      filterable
-                      tag
-                      clearable
                     />
                     <n-input
                       v-model:value="keyPassword"

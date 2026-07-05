@@ -102,7 +102,7 @@ export default {
     rememberPath: 'Path only',
     rememberFull: 'Path & Password',
     rememberTooltip: 'Off: clear certificate info on close; Path only: remember only the file path, passwords not saved; Path & Password: remember path, passwords and alias, auto-fill next time.<br/><br/>Passwords are encrypted with Windows DPAPI, decryptable only by the current user.',
-    aliasPlaceholder: 'Select or enter Alias…',
+    aliasPlaceholder: 'Enter Alias…',
     keyPasswordPlaceholder: 'Key password (optional)',
     keySameAsStore: 'Key password same as Keystore',
     btnBrowse: 'Browse…',
