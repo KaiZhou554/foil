@@ -17,7 +17,6 @@ import (
 
 	"lets_config/internal/apksigner/android"
 	"lets_config/internal/apksigner/apksign"
-	"golang.org/x/crypto/pkcs12"
 )
 
 // ── Public types ──────────────────────────────────────────────────────────
@@ -50,6 +49,7 @@ type Builder struct {
 	OutputDir    string // where final APK goes
 	KeysDir      string // where signing keys live
 	WorkDir      string // temp workspace
+	AssetDir     string // bundled assets directory (contains jre-minimal, apksigner.jar, etc.)
 
 	KeepWorkDir bool // set true to keep temp files for debugging
 
@@ -59,12 +59,13 @@ type Builder struct {
 }
 
 // New creates a Builder with default paths.
-func New(templatePath, outputDir, keysDir, workDir string) *Builder {
+func New(templatePath, outputDir, keysDir, workDir, assetDir string) *Builder {
 	b := &Builder{
 		TemplatePath: templatePath,
 		OutputDir:    outputDir,
 		KeysDir:      keysDir,
 		WorkDir:      workDir,
+		AssetDir:     assetDir,
 	}
 	b.logger = log.New(&b.logBuf, "", log.Ltime|log.Lshortfile)
 	return b
@@ -170,7 +171,7 @@ func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
 	// 9. Sign APK
 	signedName := fmt.Sprintf("%s_v%s.apk", sanitizeFilename(in.AppName), verName)
 	signedPath := filepath.Join(b.OutputDir, signedName)
-	if err := b.signAPK(unsignedPath, signedPath, in.CertPath, in.CertPassword, in.CertAlias, in.KeyPassword); err != nil {
+	if err := b.signAPK(unsignedPath, signedPath, in); err != nil {
 		return nil, b.fail("sign", err)
 	}
 
@@ -454,23 +455,52 @@ func (cw *countingWriter) Write(p []byte) (int, error) {
 	return n, err
 }
 
-func (b *Builder) signAPK(unsignedPath, signedPath, certPath, certPassword, certAlias, keyPassword string) error {
-	b.logf("Signing APK...")
+// ── SigningOptions ──────────────────────────────────────────────────────────
 
+// SigningOptions describes how to sign an APK.
+type SigningOptions struct {
+	Keystore    string // path to the keystore file
+	Alias       string // key alias in the keystore
+	KsPassword  string // keystore password
+	KeyPassword string // key password (empty = same as KsPassword)
+	In          string // unsigned APK path
+	Out         string // signed APK output path
+}
+
+func (b *Builder) signAPK(unsignedPath, signedPath string, in BuildInput) error {
+	if in.CertPath != "" {
+		// Custom certificate → use apksigner.jar (via bundled JRE)
+		b.logf("Signing with apksigner.jar (custom keystore)...")
+
+		// Zipalign the unsigned APK first (apksigner does NOT do this automatically)
+		if err := ZipalignViaRepack(unsignedPath); err != nil {
+			b.logf("WARNING: zipalign failed: %v", err)
+		} else {
+			b.logf("Zipaligned unsigned APK OK")
+		}
+
+		return b.signWithApksigner(SigningOptions{
+			Keystore:    in.CertPath,
+			Alias:       in.CertAlias,
+			KsPassword:  in.CertPassword,
+			KeyPassword: in.KeyPassword,
+			In:          unsignedPath,
+			Out:         signedPath,
+		})
+	}
+
+	// Auto-generated certificate → use Go-based signing library
+	b.logf("Signing with Go-based signer (auto-generated key)...")
 	unsignedData, err := os.ReadFile(unsignedPath)
 	if err != nil {
 		return fmt.Errorf("read unsigned apk: %w", err)
 	}
 
-	// Load signing keys (custom or auto-generated)
-	var keys []*android.SigningCert
-	if certPath != "" {
-		keys, err = b.loadCustomSigningKeys(certPath, certPassword, certAlias, keyPassword)
-	} else {
-		keys, err = b.loadSigningKeys()
+	keys, err := b.loadSigningKeys()
+	if err != nil {
+		return fmt.Errorf("load signing keys: %w", err)
 	}
 
-	// Parse and sign
 	if len(keys) > 0 {
 		b.logf("Keys loaded: %d key(s), cert: %s", len(keys), keys[0].CertPath)
 	}
@@ -535,47 +565,97 @@ func (b *Builder) signAPK(unsignedPath, signedPath, certPath, certPassword, cert
 	return nil
 }
 
-// loadCustomSigningKeys reads a PKCS12/PFX keystore and returns signing certs.
-func (b *Builder) loadCustomSigningKeys(keyPath, password, _, keyPassword string) ([]*android.SigningCert, error) {
-	data, err := os.ReadFile(keyPath)
+// signWithApksigner signs an APK using the bundled apksigner.jar (Android SDK).
+// Passwords are written to temporary files (NOT passed on command line) to avoid
+// leaking them in the process list.
+func (b *Builder) signWithApksigner(opts SigningOptions) error {
+	// Verify inputs
+	if opts.Keystore == "" {
+		return fmt.Errorf("keystore path is required")
+	}
+	if opts.Alias == "" {
+		return fmt.Errorf("key alias is required")
+	}
+	if opts.In == "" {
+		return fmt.Errorf("input APK path is required")
+	}
+	if opts.Out == "" {
+		opts.Out = opts.In // in-place signing
+	}
+
+	// Resolve bundled java.exe
+	javaPath := resolveJavaPath(b.AssetDir)
+	if _, err := os.Stat(javaPath); err != nil {
+		return fmt.Errorf("bundled java not found at %s: %w", javaPath, err)
+	}
+
+	// Resolve apksigner.jar
+	apksignerJar := filepath.Join(b.AssetDir, "apksigner.jar")
+	if _, err := os.Stat(apksignerJar); err != nil {
+		return fmt.Errorf("apksigner.jar not found at %s: %w", apksignerJar, err)
+	}
+
+	// Create a temp dir for password files (cleaned up at the end)
+	passDir, err := os.MkdirTemp("", "foil-apksigner-pass-*")
 	if err != nil {
-		return nil, fmt.Errorf("read keystore: %w", err)
+		return fmt.Errorf("create password temp dir: %w", err)
+	}
+	defer os.RemoveAll(passDir)
+
+	// Write keystore password to a temp file (0600 permissions — owner only)
+	ksPassFile := filepath.Join(passDir, "ks_pass.txt")
+	if err := os.WriteFile(ksPassFile, []byte(opts.KsPassword), 0600); err != nil {
+		return fmt.Errorf("write keystore password file: %w", err)
 	}
 
-	kp := password
-	if keyPassword != "" {
-		kp = keyPassword
+	// Build arguments — passwords via file: references, NOT on command line
+	args := []string{
+		"-jar", apksignerJar, "sign",
+		"--ks", opts.Keystore,
+		"--ks-key-alias", opts.Alias,
+		"--ks-pass", "file:" + ksPassFile,
 	}
 
-	pkey, cert, err := pkcs12.Decode(data, kp)
+	// Write key password if set and different from keystore password
+	if opts.KeyPassword != "" && opts.KeyPassword != opts.KsPassword {
+		keyPassFile := filepath.Join(passDir, "key_pass.txt")
+		if err := os.WriteFile(keyPassFile, []byte(opts.KeyPassword), 0600); err != nil {
+			return fmt.Errorf("write key password file: %w", err)
+		}
+		args = append(args, "--key-pass", "file:"+keyPassFile)
+	}
+
+	args = append(args, "--out", opts.Out, opts.In)
+
+	cmd := hiddenCmd(javaPath, args...)
+
+	b.logf("apksigner command: %s %s", javaPath, maskPasswords(args))
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("decode PKCS12 (check password): %w", err)
+		return fmt.Errorf("apksigner failed: %w\n%s", err, string(output))
+	}
+	if len(output) > 0 {
+		b.logf("apksigner output: %s", string(output))
 	}
 
-	rsaKey, ok := pkey.(*rsa.PrivateKey)
-	if !ok {
-		return nil, fmt.Errorf("private key is not RSA")
-	}
+	b.logf("APK signed with apksigner.jar -> %s", opts.Out)
+	return nil
+}
 
-	// Write certificate to a temp file for the signer (PEM-encoded DER)
-	certDir := filepath.Join(os.TempDir(), "foil-certs")
-	os.MkdirAll(certDir, 0700)
-	certPath := filepath.Join(certDir, "custom.crt")
-	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
-	if err := os.WriteFile(certPath, certPEM, 0644); err != nil {
-		return nil, fmt.Errorf("write cert: %w", err)
+// maskPasswords returns a copy of args with password values replaced by "***".
+func maskPasswords(args []string) string {
+	masked := make([]string, len(args))
+	for i, a := range args {
+		masked[i] = a
 	}
-
-	return []*android.SigningCert{
-		{
-			SigningKey: android.SigningKey{
-				Key:  rsaKey,
-				Type: android.RSA,
-				Hash: android.SHA256,
-			},
-			CertPath: certPath,
-		},
-	}, nil
+	for i := 0; i < len(masked); i++ {
+		if masked[i] == "--ks-pass" && i+1 < len(masked) {
+			masked[i+1] = "***"
+		} else if masked[i] == "--key-pass" && i+1 < len(masked) {
+			masked[i+1] = "***"
+		}
+	}
+	return strings.Join(masked, " ")
 }
 
 func (b *Builder) loadSigningKeys() ([]*android.SigningCert, error) {

@@ -104,5 +104,6 @@ export default {
     keyPasswordPlaceholder: 'Key password (optional)',
     keySameAsStore: 'Key password same as Keystore',
     btnBrowse: 'Browse…',
+    errorAliasRequired: 'Please enter a certificate alias',
   },
 }

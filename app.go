@@ -40,6 +40,7 @@ func NewApp(cfg *config.Manager) *App {
 			DesktopPath(), // default output: real Desktop
 			filepath.Join(appData, "keys"),
 			filepath.Join(appData, "builds"),
+			AssetsDir(), // bundled assets dir (jre-minimal, apksigner.jar, etc.)
 		),
 	}
 }

@@ -101,11 +101,12 @@
                     </n-input>
                     <n-input v-model:value="certPassword" :placeholder="t('advancedPage.certPasswordPlaceholder')" type="password" show-password-on="click" />
                     <n-select
-                      v-if="aliasOptions.length > 0"
                       v-model:value="certAlias"
                       :options="aliasOptions"
                       :placeholder="t('advancedPage.aliasPlaceholder')"
                       filterable
+                      tag
+                      clearable
                     />
                     <n-input
                       v-if="showKeyPassword"
@@ -115,7 +116,7 @@
                       show-password-on="click"
                     />
                     <n-space justify="space-between" align="center">
-                      <n-checkbox :checked="!showKeyPassword" @update:checked="v => showKeyPassword = !v">
+                      <n-checkbox :checked="!showKeyPassword" @update:checked="v => { showKeyPassword = !v; if (!v) keyPassword = ''; appStore.keyPassSameAsStore = v; appStore.saveConfig() }">
                         <span class="text-neutral-500">{{ t('advancedPage.keySameAsStore') }}</span>
                       </n-checkbox>
                       <n-space align="center" :size="8">
@@ -244,7 +245,8 @@ onMounted(async () => {
     certMode.value = 'custom'
   }
   rememberLevel.value = appStore.rememberLevel || 'off'
-  
+  showKeyPassword.value = !appStore.keyPassSameAsStore
+
   if (rememberLevel.value !== 'off') {
     const [path, pwd, alias, keyPwd] = await LoadCertInfo()
     if (path) {
@@ -313,8 +315,11 @@ async function pickCertFile() {
 // ── Build ──
 const canBuild = computed(() => {
   if (building.value) return false
-  if (inputTab.value === 'folder') return !!projectPath.value && !!appName.value
-  return !!filePath.value && !!appName.value
+  const hasSource = inputTab.value === 'folder' ? !!projectPath.value : !!filePath.value
+  if (!hasSource || !appName.value) return false
+  // Alias is required when using custom cert with a selected file
+  if (certMode.value === 'custom' && certPath.value && !certAlias.value) return false
+  return true
 })
 
 async function buildAPK() {
@@ -355,7 +360,14 @@ async function buildAPK() {
     message.success(t('buildPage.successTitle') + '\n' + res.APKPath, { duration: 4000, keepAliveOnHover: true })
   } catch (err: any) {
     const msg = String(err?.message || err || '')
-    const errHint = msg.includes('index.html') ? t('buildPage.errorNoIndex') : t('buildPage.errorGeneric')
+    let errHint: string
+    if (msg.includes('index.html')) {
+      errHint = t('buildPage.errorNoIndex')
+    } else if (msg.includes('key alias')) {
+      errHint = t('advancedPage.errorAliasRequired')
+    } else {
+      errHint = t('buildPage.errorGeneric')
+    }
     message.error(t('buildPage.failTitle') + '\n' + errHint, { duration: 5000, keepAliveOnHover: true })
   } finally {
     building.value = false

@@ -104,5 +104,6 @@ export default {
     keyPasswordPlaceholder: 'Key 密码（可选）',
     keySameAsStore: 'Key 密码与 Keystore 相同',
     btnBrowse: '浏览…',
+    errorAliasRequired: '请填写证书别名（Alias）',
   },
 }
