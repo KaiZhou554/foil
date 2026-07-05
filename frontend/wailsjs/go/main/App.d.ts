@@ -13,11 +13,19 @@ export function GetConfig():Promise<config.Config>;
 
 export function GetIconPaths():Promise<Array<string>>;
 
+export function ListKeystoreAliases(arg1:string,arg2:string):Promise<Array<string>>;
+
+export function LoadCertInfo():Promise<string>;
+
 export function OpenFolder(arg1:string):Promise<void>;
 
 export function PrepareFileInput(arg1:string):Promise<string>;
 
+export function SaveCertInfo(arg1:string,arg2:string,arg3:string,arg4:string):Promise<void>;
+
 export function SaveConfig(arg1:config.Config):Promise<void>;
+
+export function SelectCertFile():Promise<string>;
 
 export function SelectDirectory():Promise<string>;
 

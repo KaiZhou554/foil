@@ -95,14 +95,33 @@
                 <n-collapse-transition :show="certMode === 'custom'">
                   <div class="mt-2 ml-7 space-y-2">
                     <n-input v-model:value="certPath" :placeholder="t('advancedPage.certPathPlaceholder')" readonly size="small">
-                      <template #suffix>
-                        <n-button size="tiny" text @click="pickCertFile">{{ t('advancedPage.btnBrowse') }}</n-button>
-                      </template>
-                    </n-input>
-                    <n-input v-model:value="certPassword" :placeholder="t('advancedPage.certPasswordPlaceholder')" type="password" size="small" />
-                    <n-checkbox :checked="rememberCert" @update:checked="val => rememberCert = val">
-                      <span class="text-xs text-neutral-500">{{ t('advancedPage.rememberCert') }}</span>
-                    </n-checkbox>
+                        <template #suffix>
+                          <n-button size="tiny" text @click="pickCertFile">{{ t('advancedPage.btnBrowse') }}</n-button>
+                        </template>
+                      </n-input>
+                      <n-input v-model:value="certPassword" :placeholder="t('advancedPage.certPasswordPlaceholder')" type="password" size="small" show-password-on="click" />
+                      <n-select
+                        v-if="aliasOptions.length > 0"
+                        v-model:value="certAlias"
+                        :options="aliasOptions"
+                        :placeholder="t('advancedPage.aliasPlaceholder')"
+                        size="small"
+                        filterable
+                      />
+                      <n-input
+                        v-if="showKeyPassword"
+                        v-model:value="keyPassword"
+                        :placeholder="t('advancedPage.keyPasswordPlaceholder')"
+                        type="password"
+                        size="small"
+                        show-password-on="click"
+                      />
+                      <n-checkbox :checked="!showKeyPassword" @update:checked="v => showKeyPassword = !v">
+                        <span class="text-xs text-neutral-500">{{ t('advancedPage.keySameAsStore') }}</span>
+                      </n-checkbox>
+                      <n-checkbox :checked="rememberCert" @update:checked="onRememberChange">
+                        <span class="text-xs text-neutral-500">{{ t('advancedPage.rememberCert') }}</span>
+                      </n-checkbox>
                   </div>
                 </n-collapse-transition>
               </div>
@@ -118,15 +137,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput } from '../../wailsjs/go/main/App'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases } from '../../wailsjs/go/main/App'
+import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NCheckbox, NCollapseTransition, useMessage, NMessageProvider } from 'naive-ui'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NCheckbox, NSelect, NCollapseTransition, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()
 const message = useMessage()
+const appStore = useAppStore()
 
 // ── Source ──
 const inputTab = ref('folder')
@@ -190,14 +211,71 @@ function onlyAllowVersion(value: string) {
 const certMode = ref<'auto' | 'custom'>('auto')
 const certPath = ref('')
 const certPassword = ref('')
+const certAlias = ref('')
+const keyPassword = ref('')
+const showKeyPassword = ref(false)
 const rememberCert = ref(false)
+const aliasOptions = ref<{ label: string; value: string }[]>([])
+const loadingAliases = ref(false)
+
+// On mount, restore remembered cert settings
+onMounted(async () => {
+  if (appStore.useCustomCert) {
+    certMode.value = 'custom'
+  }
+  if (appStore.rememberCert) {
+    rememberCert.value = true
+    const [path, pwd, alias, keyPwd] = await LoadCertInfo()
+    if (path) {
+      certPath.value = path
+      certPassword.value = pwd
+      certAlias.value = alias
+      keyPassword.value = keyPwd
+      if (path) tryDetectAliases(path, pwd)
+    }
+  }
+})
 
 function onCertModeChange(val: string) {
   certMode.value = val as 'auto' | 'custom'
+  appStore.useCustomCert = val === 'custom'
+  appStore.saveConfig()
+}
+
+function onRememberChange(val: boolean) {
+  rememberCert.value = val
+  appStore.rememberCert = val
+  if (val && certPath.value) {
+    SaveCertInfo(certPath.value, certPassword.value, certAlias.value, keyPassword.value)
+  }
+  appStore.saveConfig()
+}
+
+async function tryDetectAliases(path: string, pass: string) {
+  if (!path || !pass) return
+  loadingAliases.value = true
+  try {
+    const aliases = await ListKeystoreAliases(path, pass)
+    aliasOptions.value = aliases.map(a => ({ label: a, value: a }))
+    if (aliases.length === 1 && !certAlias.value) {
+      certAlias.value = aliases[0]
+    }
+  } catch {
+    // keytool not available or failed — alias can be typed manually
+  } finally {
+    loadingAliases.value = false
+  }
 }
 
 async function pickCertFile() {
-  // TODO: implement file picker for .pfx/.p12/.key files
+  const file = await SelectCertFile()
+  if (file) {
+    certPath.value = file
+    // Auto-detect aliases if password is already filled
+    if (certPassword.value) {
+      tryDetectAliases(file, certPassword.value)
+    }
+  }
 }
 
 // ── Build ──

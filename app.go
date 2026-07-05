@@ -81,6 +81,20 @@ func (a *App) SelectFile() string {
 	return file
 }
 
+// SelectCertFile opens a native file picker for keystore/certificate files.
+func (a *App) SelectCertFile() string {
+	file, err := wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+		Title: "选择证书文件",
+		Filters: []wailsRuntime.FileFilter{
+			{DisplayName: "Keystore / 证书", Pattern: "*.keystore;*.jks;*.pfx;*.p12;*.key;*.crt"},
+		},
+	})
+	if err != nil || file == "" {
+		return ""
+	}
+	return file
+}
+
 // TempDirBase returns the base directory for temporary files:
 // %TEMP%\unieditdept\foil\
 func TempDirBase() string {
@@ -190,6 +204,21 @@ func (a *App) OpenFolder(path string) {
 // GetAppVersion returns the application version from wails.json.
 func (a *App) GetAppVersion() string {
 	return AppVersion
+}
+
+// SaveCertInfo encrypts and persists cert credentials to disk.
+func (a *App) SaveCertInfo(certPath, certPassword, certAlias, keyPassword string) error {
+	return saveCertInfo(certPath, certPassword, certAlias, keyPassword)
+}
+
+// LoadCertInfo reads and decrypts cert credentials from disk.
+func (a *App) LoadCertInfo() (string, string, string, string, error) {
+	return loadCertInfo()
+}
+
+// ListKeystoreAliases returns all alias names from a keystore using keytool.
+func (a *App) ListKeystoreAliases(keystorePath, storePass string) ([]string, error) {
+	return listKeystoreAliases(keystorePath, storePass)
 }
 
 // BuildAPK runs the full build pipeline. Called from frontend via Wails bind.

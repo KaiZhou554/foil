@@ -32,6 +32,8 @@ export namespace config {
 	    outputDir: string;
 	    showFloatButton: boolean;
 	    openAfterBuild: boolean;
+	    useCustomCert: boolean;
+	    rememberCert: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -45,6 +47,8 @@ export namespace config {
 	        this.outputDir = source["outputDir"];
 	        this.showFloatButton = source["showFloatButton"];
 	        this.openAfterBuild = source["openAfterBuild"];
+	        this.useCustomCert = source["useCustomCert"];
+	        this.rememberCert = source["rememberCert"];
 	    }
 	}
 

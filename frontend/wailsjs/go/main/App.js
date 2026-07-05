@@ -22,6 +22,14 @@ export function GetIconPaths() {
   return window['go']['main']['App']['GetIconPaths']();
 }
 
+export function ListKeystoreAliases(arg1, arg2) {
+  return window['go']['main']['App']['ListKeystoreAliases'](arg1, arg2);
+}
+
+export function LoadCertInfo() {
+  return window['go']['main']['App']['LoadCertInfo']();
+}
+
 export function OpenFolder(arg1) {
   return window['go']['main']['App']['OpenFolder'](arg1);
 }
@@ -30,8 +38,16 @@ export function PrepareFileInput(arg1) {
   return window['go']['main']['App']['PrepareFileInput'](arg1);
 }
 
+export function SaveCertInfo(arg1, arg2, arg3, arg4) {
+  return window['go']['main']['App']['SaveCertInfo'](arg1, arg2, arg3, arg4);
+}
+
 export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
+}
+
+export function SelectCertFile() {
+  return window['go']['main']['App']['SelectCertFile']();
 }
 
 export function SelectDirectory() {

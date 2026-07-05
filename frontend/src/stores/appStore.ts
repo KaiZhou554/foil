@@ -17,6 +17,8 @@ export const useAppStore = defineStore('app', () => {
   const outputDir = ref<string>('')
   const showFloatButton = ref<boolean>(false)
   const openAfterBuild = ref<boolean>(true)
+  const useCustomCert = ref<boolean>(false)
+  const rememberCert = ref<boolean>(false)
 
   /** Whether the config has been loaded from the backend yet. */
   const configLoaded = ref<boolean>(false)
@@ -32,6 +34,8 @@ export const useAppStore = defineStore('app', () => {
       outputDir.value = cfg.outputDir || ''
       showFloatButton.value = cfg.showFloatButton ?? false
       openAfterBuild.value = cfg.openAfterBuild ?? true
+      useCustomCert.value = cfg.useCustomCert ?? false
+      rememberCert.value = cfg.rememberCert ?? false
       configLoaded.value = true
     } catch (err) {
       console.error('Failed to load config from backend:', err)
@@ -49,6 +53,8 @@ export const useAppStore = defineStore('app', () => {
         outputDir: outputDir.value,
         showFloatButton: showFloatButton.value,
         openAfterBuild: openAfterBuild.value,
+        useCustomCert: useCustomCert.value,
+        rememberCert: rememberCert.value,
       }))
     } catch (err) {
       console.error('Failed to save config to backend:', err)
@@ -100,6 +106,8 @@ export const useAppStore = defineStore('app', () => {
     outputDir,
     showFloatButton,
     openAfterBuild,
+    useCustomCert,
+    rememberCert,
     configLoaded,
     isMaximized,
     sidebarOpen,

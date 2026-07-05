@@ -10,6 +10,8 @@ type Config struct {
 	OutputDir       string `toml:"outputDir"       json:"outputDir"`
 	ShowFloatButton bool   `toml:"showFloatButton" json:"showFloatButton"`
 	OpenAfterBuild  bool   `toml:"openAfterBuild"  json:"openAfterBuild"`
+	UseCustomCert   bool   `toml:"useCustomCert"   json:"useCustomCert"`
+	RememberCert    bool   `toml:"rememberCert"    json:"rememberCert"`
 }
 
 // Validate checks that the loaded configuration has sensible values.
@@ -31,5 +33,7 @@ func DefaultConfig() *Config {
 		OutputDir:       "",
 		ShowFloatButton: false,
 		OpenAfterBuild:  true,
+		UseCustomCert:   false,
+		RememberCert:    false,
 	}
 }

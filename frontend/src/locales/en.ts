@@ -96,6 +96,9 @@ export default {
     certPathPlaceholder: 'Select certificate file…',
     certPasswordPlaceholder: 'Certificate password (optional)',
     rememberCert: 'Remember this setting',
+    aliasPlaceholder: 'Select or enter Alias…',
+    keyPasswordPlaceholder: 'Key password (optional)',
+    keySameAsStore: 'Key password same as Keystore',
     btnBrowse: 'Browse…',
   },
 }

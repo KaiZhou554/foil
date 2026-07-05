@@ -96,6 +96,9 @@ export default {
     certPathPlaceholder: '选择证书文件…',
     certPasswordPlaceholder: '证书密码（可选）',
     rememberCert: '记住此设置',
+    aliasPlaceholder: '选择或输入 Alias…',
+    keyPasswordPlaceholder: 'Key 密码（可选）',
+    keySameAsStore: 'Key 密码与 Keystore 相同',
     btnBrowse: '浏览…',
   },
 }
