@@ -23,8 +23,6 @@ export function PrepareFileInput(arg1:string):Promise<string>;
 
 export function SaveCertInfo(arg1:string,arg2:string,arg3:string,arg4:string):Promise<void>;
 
-export function SetCustomCert(arg1:string,arg2:string,arg3:string,arg4:string):Promise<void>;
-
 export function SaveConfig(arg1:config.Config):Promise<void>;
 
 export function SelectCertFile():Promise<string>;
@@ -34,3 +32,5 @@ export function SelectDirectory():Promise<string>;
 export function SelectFile():Promise<string>;
 
 export function SelectOutputDir():Promise<string>;
+
+export function SetCustomCert(arg1:string,arg2:string,arg3:string,arg4:string):Promise<void>;

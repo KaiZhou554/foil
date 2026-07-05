@@ -514,10 +514,11 @@ func (b *Builder) signAPK(unsignedPath, signedPath, certPath, certPassword, cert
 		alignedZ, err := apksign.NewZip(alignedData)
 		if err == nil {
 			alignedZ, err = alignedZ.SignV2(keys)
-			if err == nil {
+			if err != nil {
+				b.logf("WARNING: SignV2 after zipalign failed: %v", err)
+			} else {
 				alignedData = alignedZ.Bytes()
 				os.WriteFile(signedPath, alignedData, 0644)
-				// Verify final v2
 				if err := alignedZ.VerifyV2(); err != nil {
 					b.logf("WARNING: final v2 verification: %v", err)
 				} else {
@@ -553,11 +554,12 @@ func (b *Builder) loadCustomSigningKeys(keyPath, password, alias, keyPassword st
 		return nil, fmt.Errorf("private key is not RSA")
 	}
 
-	// Write certificate to a temp file for the signer
+	// Write certificate to a temp file for the signer (PEM-encoded DER)
 	certDir := filepath.Join(os.TempDir(), "foil-certs")
 	os.MkdirAll(certDir, 0700)
 	certPath := filepath.Join(certDir, "custom.crt")
-	if err := os.WriteFile(certPath, cert.Raw, 0644); err != nil {
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
+	if err := os.WriteFile(certPath, certPEM, 0644); err != nil {
 		return nil, fmt.Errorf("write cert: %w", err)
 	}
 
