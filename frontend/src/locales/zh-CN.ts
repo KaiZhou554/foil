@@ -13,6 +13,7 @@ export default {
 
   sidebar: {
     home: '主页',
+    advanced: '高级',
     settings: '设置',
   },
 
@@ -85,5 +86,16 @@ export default {
     logCustomPkg: '使用自定义包名：',
     logBuilding: '正在生成 APK...\n',
     floatPlaceholder: '暂无构建记录',
+  },
+
+  advancedPage: {
+    header: '高级构建',
+    certificate: '证书',
+    certAuto: '使用自动生成的证书',
+    certCustom: '使用自己的证书',
+    certPathPlaceholder: '选择证书文件…',
+    certPasswordPlaceholder: '证书密码（可选）',
+    rememberCert: '记住此设置',
+    btnBrowse: '浏览…',
   },
 }

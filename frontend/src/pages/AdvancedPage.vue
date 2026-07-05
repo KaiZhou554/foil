@@ -1,0 +1,289 @@
+<template>
+  <div class="h-full overflow-y-auto p-6">
+    <n-message-provider>
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-neutral-800 dark:text-neutral-100">
+          {{ t('advancedPage.header') }}
+        </h1>
+      </div>
+
+      <div class="max-w-2xl space-y-5">
+        <!-- Project source -->
+        <n-card size="small">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <span>{{ t('buildPage.sourceCard') }}</span>
+              <n-tag v-if="!sourceStatus" type="default" size="small" round>
+                {{ t('buildPage.statusNotSelected') }}
+              </n-tag>
+              <n-tag v-else type="success" size="small" round>
+                <template #icon><n-icon :component="CheckmarkCircle24Regular" /></template>
+                {{ t('buildPage.status' + sourceStatus) }}
+              </n-tag>
+            </div>
+          </template>
+          <n-tabs type="line" animated default-value="folder" @update:value="onTabChange">
+            <n-tab-pane name="folder" :tab="t('buildPage.tabFolder')">
+              <div class="flex items-center gap-2">
+                <n-input v-model:value="projectPath" :placeholder="t('buildPage.placeholderFolder')" clearable @keydown.enter="onPathEnter" />
+                <n-button @click="selectDir" type="primary" ghost>{{ t('buildPage.btnBrowse') }}</n-button>
+              </div>
+            </n-tab-pane>
+            <n-tab-pane name="file" :tab="t('buildPage.tabFile')">
+              <div class="flex items-center gap-2">
+                <n-input v-model:value="filePath" :placeholder="t('buildPage.placeholderFile')" clearable />
+                <n-button @click="selectFile" type="primary" ghost>{{ t('buildPage.btnSelectFile') }}</n-button>
+              </div>
+            </n-tab-pane>
+          </n-tabs>
+        </n-card>
+
+        <!-- App name -->
+        <n-card :title="t('buildPage.appNameCard')" size="small">
+          <n-input v-model:value="appName" :placeholder="t('buildPage.placeholderAppName')" maxlength="30" />
+        </n-card>
+
+        <!-- Icon -->
+        <n-card :title="t('buildPage.iconCard')" size="small">
+          <div class="flex items-center gap-4">
+            <img v-if="customIconData" :src="customIconData" class="w-16 h-16 rounded-xl object-cover shadow-sm border border-neutral-200 dark:border-neutral-700 shrink-0" />
+            <div v-else class="w-16 h-16 rounded-xl bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-sm shrink-0">{{ iconLetter }}</div>
+            <div class="flex-1">
+              <div class="text-neutral-500 dark:text-neutral-400 mb-2">{{ t('buildPage.iconHint') }}</div>
+              <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="onIconFileSelected" />
+              <div class="flex items-center gap-2">
+                <n-button size="small" @click="openIconPicker">{{ t('buildPage.btnSelectImage') }}</n-button>
+                <n-button v-if="customIconData" size="small" tertiary @click="clearIcon">{{ t('buildPage.btnClear') }}</n-button>
+              </div>
+            </div>
+          </div>
+        </n-card>
+
+        <!-- Package name & Version (always visible) -->
+        <div class="bg-white dark:bg-neutral-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4 space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ t('buildPage.pkgPreview') }}</span>
+              <span class="text-sm text-neutral-400 font-mono">{{ previewPkgName }}</span>
+            </div>
+            <n-input-group>
+              <n-input v-model:value="pkgSegment1" placeholder="com" :allow-input="onlyAllowPkg" :style="{ width: '33%' }" maxlength="20" />
+              <n-input v-model:value="pkgSegment2" :placeholder="lastSeg2 || 'company'" :allow-input="onlyAllowPkg" :style="{ width: '33%' }" maxlength="20" />
+              <n-input v-model:value="pkgSegment3" placeholder="auto" :allow-input="onlyAllowPkg" :style="{ width: '33%' }" maxlength="20" />
+            </n-input-group>
+          </div>
+          <div class="border-t border-neutral-200 dark:border-neutral-700 pt-3">
+            <label class="text-sm text-neutral-500 dark:text-neutral-400 block mb-1.5">{{ t('buildPage.versionLabel') }}</label>
+            <n-input v-model:value="versionName" :placeholder="t('buildPage.versionPlaceholder')" :allow-input="onlyAllowVersion" maxlength="20" />
+          </div>
+        </div>
+
+        <!-- Certificate -->
+        <n-card size="small">
+          <template #header>
+            <span class="text-sm font-medium">{{ t('advancedPage.certificate') }}</span>
+          </template>
+          <n-radio-group :value="certMode" @update:value="onCertModeChange">
+            <div class="space-y-3">
+              <n-radio value="auto">
+                <span class="text-sm text-neutral-700 dark:text-neutral-200">{{ t('advancedPage.certAuto') }}</span>
+              </n-radio>
+              <div>
+                <n-radio value="custom">
+                  <span class="text-sm text-neutral-700 dark:text-neutral-200">{{ t('advancedPage.certCustom') }}</span>
+                </n-radio>
+                <n-collapse-transition :show="certMode === 'custom'">
+                  <div class="mt-2 ml-7 space-y-2">
+                    <n-input v-model:value="certPath" :placeholder="t('advancedPage.certPathPlaceholder')" readonly size="small">
+                      <template #suffix>
+                        <n-button size="tiny" text @click="pickCertFile">{{ t('advancedPage.btnBrowse') }}</n-button>
+                      </template>
+                    </n-input>
+                    <n-input v-model:value="certPassword" :placeholder="t('advancedPage.certPasswordPlaceholder')" type="password" size="small" />
+                    <n-checkbox :checked="rememberCert" @update:checked="val => rememberCert = val">
+                      <span class="text-xs text-neutral-500">{{ t('advancedPage.rememberCert') }}</span>
+                    </n-checkbox>
+                  </div>
+                </n-collapse-transition>
+              </div>
+            </div>
+          </n-radio-group>
+        </n-card>
+
+        <!-- Build button -->
+        <BuildButton :disabled="!canBuild || building" :building="building" :idle-text="t('buildPage.btnBuild')" :busy-text="t('buildPage.btnBuilding')" @click="buildAPK" />
+      </div>
+    </n-message-provider>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput } from '../../wailsjs/go/main/App'
+import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NCheckbox, NCollapseTransition, useMessage, NMessageProvider } from 'naive-ui'
+import BuildButton from '@/components/BuildButton.vue'
+
+const { t } = useI18n()
+const message = useMessage()
+
+// ── Source ──
+const inputTab = ref('folder')
+const projectPath = ref('')
+const filePath = ref('')
+const appName = ref('')
+const building = ref(false)
+
+const sourceStatus = computed(() => {
+  if (projectPath.value) return 'Folder'
+  if (filePath.value) {
+    const lower = filePath.value.toLowerCase()
+    if (lower.endsWith('.zip')) return 'Zip'
+    if (lower.endsWith('.html') || lower.endsWith('.htm')) return 'Html'
+  }
+  return null
+})
+
+function onTabChange(name: string) { inputTab.value = name }
+async function selectDir() {
+  const dir = await SelectDirectory()
+  if (dir) { projectPath.value = dir.replace(/^"(.*)"$/, '$1').trim(); filePath.value = '' }
+}
+function onPathEnter() { projectPath.value = projectPath.value.replace(/^"(.*)"$/, '$1').trim(); filePath.value = '' }
+async function selectFile() {
+  const f = await SelectFile()
+  if (f) { filePath.value = f; projectPath.value = '' }
+}
+
+// ── Icon ──
+const fileInputRef = ref<HTMLInputElement>()
+const customIconData = ref<string | null>(null)
+const iconLetter = computed(() => customIconData.value ? '' : (appName.value ? appName.value.charAt(0).toUpperCase() : '?'))
+function openIconPicker() { fileInputRef.value?.click() }
+function onIconFileSelected(e: Event) {
+  const input = e.target as HTMLInputElement
+  if (!input.files?.length) return
+  const reader = new FileReader()
+  reader.onload = () => { customIconData.value = reader.result as string }
+  reader.readAsDataURL(input.files[0])
+  input.value = ''
+}
+function clearIcon() { customIconData.value = null }
+
+// ── Package ──
+const pkgSegment1 = ref('com')
+const pkgSegment2 = ref('')
+const pkgSegment3 = ref('')
+const lastSeg2 = ref('')
+const versionName = ref('')
+const previewPkgName = computed(() => `${pkgSegment1.value || 'com'}.${pkgSegment2.value || 'app'}.${pkgSegment3.value || 'app'}`)
+function onlyAllowPkg(value: string) { return !value || /^[a-z][a-z0-9_.-]*$/.test(value) }
+function onlyAllowVersion(value: string) {
+  if (!value) return true
+  if (!/^[\d.]*$/.test(value)) return false
+  if (value.includes('..')) return false
+  return (value.match(/\./g) || []).length <= 2
+}
+
+// ── Certificate ──
+const certMode = ref<'auto' | 'custom'>('auto')
+const certPath = ref('')
+const certPassword = ref('')
+const rememberCert = ref(false)
+
+function onCertModeChange(val: string) {
+  certMode.value = val as 'auto' | 'custom'
+}
+
+async function pickCertFile() {
+  // TODO: implement file picker for .pfx/.p12/.key files
+}
+
+// ── Build ──
+const canBuild = computed(() => {
+  if (building.value) return false
+  if (inputTab.value === 'folder') return !!projectPath.value && !!appName.value
+  return !!filePath.value && !!appName.value
+})
+
+async function buildAPK() {
+  if (!canBuild.value || building.value) return
+  building.value = true
+  try {
+    let projectDir = ''
+    if (inputTab.value === 'folder') projectDir = projectPath.value
+    else projectDir = await PrepareFileInput(filePath.value)
+
+    const seg1 = pkgSegment1.value || 'com'
+    const seg2 = pkgSegment2.value || 'app'
+    const seg3 = pkgSegment3.value || 'app'
+    const customPkg = `${seg1}.${seg2}.${seg3}`
+
+    const iconPaths = await GetIconPaths()
+    const icons: Record<string, string> = {}
+    for (const iconPath of iconPaths) {
+      const size = 48 // simplified
+      if (customIconData.value) {
+        const blob = await resizeImage(customIconData.value, size, iconPath.includes('foreground'))
+        icons[iconPath] = await blobToBase64(blob)
+      } else {
+        const letter = appName.value.charAt(0).toUpperCase()
+        const blob = await generateTextIcon(letter, '#4F46E5', size, iconPath.includes('foreground'))
+        icons[iconPath] = await blobToBase64(blob)
+      }
+    }
+
+    const res = await BuildAPK(projectDir, appName.value, customPkg, versionName.value.replace(/\.+$/, ''), icons)
+    message.success(t('buildPage.successTitle') + '\n' + res.APKPath, { duration: 4000, keepAliveOnHover: true })
+  } catch (err: any) {
+    const msg = String(err?.message || err || '')
+    const errHint = msg.includes('index.html') ? t('buildPage.errorNoIndex') : t('buildPage.errorGeneric')
+    message.error(t('buildPage.failTitle') + '\n' + errHint, { duration: 5000, keepAliveOnHover: true })
+  } finally {
+    building.value = false
+  }
+}
+
+// ── Helpers (simplified) ──
+function resizeImage(dataUrl: string, size: number, _fg: boolean): Promise<Blob> {
+  return new Promise((res, rej) => {
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = size; c.height = size
+      const ctx = c.getContext('2d')!
+      const min = Math.min(img.width, img.height)
+      ctx.drawImage(img, (img.width - min) / 2, (img.height - min) / 2, min, min, 0, 0, size, size)
+      c.toBlob(b => b ? res(b) : rej(new Error('WebP failed')), 'image/webp', 0.9)
+    }
+    img.onerror = () => rej(new Error('Load failed'))
+    img.src = dataUrl
+  })
+}
+
+function generateTextIcon(letter: string, bg: string, size: number, _fg: boolean): Promise<Blob> {
+  return new Promise((res, rej) => {
+    const c = document.createElement('canvas')
+    c.width = size; c.height = size
+    const ctx = c.getContext('2d')!
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, size, size)
+    ctx.fillStyle = '#fff'
+    ctx.font = `bold ${size * 0.5}px sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(letter, size / 2, size / 2)
+    c.toBlob(b => b ? res(b) : rej(new Error('WebP failed')), 'image/webp', 0.9)
+  })
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((res, rej) => {
+    const r = new FileReader()
+    r.onload = () => { const s = r.result as string; res(s.substring(s.indexOf(',') + 1)) }
+    r.onerror = () => rej(new Error('Failed'))
+    r.readAsDataURL(blob)
+  })
+}
+</script>

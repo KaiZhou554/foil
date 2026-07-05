@@ -331,7 +331,10 @@ async function buildAPK() {
       projectDir = await PrepareFileInput(filePath.value)
     }
 
-    const customPkg = pkgSegment3.value ? `${pkgSegment1.value}.${pkgSegment2.value}.${pkgSegment3.value}` : ''
+    const seg1 = pkgSegment1.value || 'com'
+    const seg2 = pkgSegment2.value || 'app'
+    const seg3 = pkgSegment3.value || 'app'
+    const customPkg = `${seg1}.${seg2}.${seg3}`
     if (customPkg) {
       buildLog.value += `${t('buildPage.logCustomPkg')}${customPkg}\n`
     }

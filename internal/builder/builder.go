@@ -3,6 +3,9 @@ package builder
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
@@ -539,12 +542,43 @@ func (b *Builder) loadSigningKeys() ([]*android.SigningCert, error) {
 		b.logf("Generated key: %s", keyPath)
 	}
 
+	// Read and decrypt the private key (DPAPI-encrypted or plain PEM)
+	keyData, err := decryptPrivateKey(keyPath)
+	if err != nil {
+		return nil, fmt.Errorf("read private key: %w", err)
+	}
+
+	// Parse PEM (DPAPI-encrypted keys are stored without PEM armor,
+	// but plain PEM keys may have headers).
+	block, _ := pem.Decode(keyData)
+	var derBytes []byte
+	if block != nil {
+		derBytes = block.Bytes
+	} else {
+		// Already raw DER (DPAPI-encrypted key)
+		derBytes = keyData
+	}
+
+	privateKey, err := x509.ParsePKCS1PrivateKey(derBytes)
+	if err != nil {
+		// Try PKCS8
+		pk8, err2 := x509.ParsePKCS8PrivateKey(derBytes)
+		if err2 != nil {
+			return nil, fmt.Errorf("parse private key (PKCS1: %v, PKCS8: %v)", err, err2)
+		}
+		var ok bool
+		privateKey, ok = pk8.(*rsa.PrivateKey)
+		if !ok {
+			return nil, fmt.Errorf("private key is not RSA")
+		}
+	}
+
 	return []*android.SigningCert{
 		{
 			SigningKey: android.SigningKey{
-				KeyPath: keyPath,
-				Type:    android.RSA,
-				Hash:    android.SHA256,
+				Key:  privateKey,
+				Type: android.RSA,
+				Hash: android.SHA256,
 			},
 			CertPath: certPath,
 		},

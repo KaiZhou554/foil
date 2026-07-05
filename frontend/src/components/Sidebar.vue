@@ -55,6 +55,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@vicons/utils'
 import Home20Regular from '@vicons/fluent/es/Home20Regular'
+import Options20Regular from '@vicons/fluent/es/Options20Regular'
 import Settings20Regular from '@vicons/fluent/es/Settings20Regular'
 
 const { t } = useI18n()
@@ -76,6 +77,11 @@ const navItems = computed<NavItem[]>(() => [
     route: '/main/home',
     label: t('sidebar.home'),
     icon: Home20Regular,
+  },
+  {
+    route: '/main/advanced',
+    label: t('sidebar.advanced'),
+    icon: Options20Regular,
   },
   {
     route: '/main/settings',

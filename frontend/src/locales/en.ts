@@ -13,6 +13,7 @@ export default {
 
   sidebar: {
     home: 'Home',
+    advanced: 'Advanced',
     settings: 'Settings',
   },
 
@@ -85,5 +86,16 @@ export default {
     logCustomPkg: 'Using custom package: ',
     logBuilding: 'Building APK...\n',
     floatPlaceholder: 'No build yet',
+  },
+
+  advancedPage: {
+    header: 'Advanced Build',
+    certificate: 'Certificate',
+    certAuto: 'Use auto-generated certificate',
+    certCustom: 'Use my own certificate',
+    certPathPlaceholder: 'Select certificate file…',
+    certPasswordPlaceholder: 'Certificate password (optional)',
+    rememberCert: 'Remember this setting',
+    btnBrowse: 'Browse…',
   },
 }

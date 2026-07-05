@@ -6,6 +6,7 @@ import type { Pinia } from 'pinia'
 const WelcomePage = () => import('@/pages/WelcomePage.vue')
 const MainLayout = () => import('@/pages/MainLayout.vue')
 const HomePage = () => import('@/pages/HomePage.vue')
+const AdvancedPage = () => import('@/pages/AdvancedPage.vue')
 const SettingsPage = () => import('@/pages/SettingsPage.vue')
 
 const router = createRouter({
@@ -32,6 +33,11 @@ const router = createRouter({
           path: 'home',
           name: 'home',
           component: HomePage,
+        },
+        {
+          path: 'advanced',
+          name: 'advanced',
+          component: AdvancedPage,
         },
         {
           path: 'settings',
