@@ -7,7 +7,7 @@
       </h1>
     </div>
 
-    <div class="max-w-2xl space-y-5">
+    <div class="max-w-2xl space-y-5 pb-6">
       <!-- HTML 项目来源 (Tabs) -->
       <n-card size="small">
         <template #header>
@@ -157,7 +157,7 @@
         :idle-text="t('buildPage.btnBuild')"
         :busy-text="t('buildPage.btnBuilding')"
         @click="buildAPK"
-        class="max-w-sm pb-6"
+        class="max-w-sm"
       />
 
     </div>

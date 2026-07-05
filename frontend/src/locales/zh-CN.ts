@@ -101,7 +101,7 @@ export default {
     rememberOff: '不记住',
     rememberPath: '仅路径',
     rememberFull: '路径和密码',
-    rememberTooltip: '不记住：关闭时清除证书信息；仅路径：只记住证书文件路径，密码不保存；路径和密码：完整记住路径、密码和别名，下次自动填入。<br/><br/>密码使用 Windows DPAPI 加密存储，仅当前用户可解密。',
+    rememberTooltip: '选择要保留的信息。<br/><br/>• 不记住：关闭后移除所有信息。<br/>• 仅路径：保留证书路径，不保留密码。<br/>• 路径和密码：保留路径、密码和别名，方便下次继续使用。<br/><br/>密码会使用 Windows DPAPI 加密，并且只能由当前 Windows 用户解密。',
     aliasPlaceholder: '选择或输入 Alias…',
     keyPasswordPlaceholder: 'Key 密码（可选）',
     keySameAsStore: 'Key 密码与 Keystore 相同',

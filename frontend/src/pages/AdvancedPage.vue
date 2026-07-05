@@ -7,7 +7,7 @@
         </h1>
       </div>
 
-      <div class="max-w-2xl space-y-5">
+      <div class="max-w-2xl space-y-5 pb-6">
         <!-- Project source -->
         <n-card size="small">
           <template #header>
@@ -117,7 +117,7 @@
                     />
                     <n-divider />
                     <div class="flex items-center justify-end gap-2">
-                      <n-icon :component="Save24Regular" size="18" class="text-neutral-400" />
+                      <n-icon :component="KeyMultiple20Filled" size="18" class="text-neutral-400" />
                       <span class="text-neutral-500 shrink-0">{{ t('advancedPage.remember') }}</span>
                       <n-select
                         v-model:value="rememberLevel"
@@ -139,7 +139,7 @@
         </n-card>
 
         <!-- Build button -->
-        <BuildButton :disabled="!canBuild || building" :building="building" :idle-text="t('buildPage.btnBuild')" :busy-text="t('buildPage.btnBuilding')" @click="buildAPK" class="max-w-sm pb-6" />
+        <BuildButton :disabled="!canBuild || building" :building="building" :idle-text="t('buildPage.btnBuild')" :busy-text="t('buildPage.btnBuilding')" @click="buildAPK" class="max-w-sm" />
       </div>
     </n-message-provider>
 
@@ -163,7 +163,7 @@ import { useI18n } from 'vue-i18n'
 import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, SelectCertFile, PrepareFileInput, SaveCertInfo, LoadCertInfo, ListKeystoreAliases, SetCustomCert, OpenFolder } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
 import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular'
-import Save24Regular from '@vicons/fluent/es/Save24Regular'
+import KeyMultiple20Filled from '@vicons/fluent/es/KeyMultiple20Filled'
 import Info16Regular from '@vicons/fluent/es/Info16Regular'
 import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
 import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NCollapseTransition, NDivider, NTooltip, NFloatButton, useMessage, NMessageProvider } from 'naive-ui'
@@ -205,7 +205,7 @@ async function selectFile() {
 // ── Icon ──
 const fileInputRef = ref<HTMLInputElement>()
 const customIconData = ref<string | null>(null)
-const iconLetter = computed(() => customIconData.value ? '' : (appName.value ? appName.value.charAt(0).toUpperCase() : '?'))
+const iconLetter = computed(() => customIconData.value ? '' : (appName.value ? appName.value.charAt(0).toUpperCase() : '⌘'))
 function openIconPicker() { fileInputRef.value?.click() }
 function onIconFileSelected(e: Event) {
   const input = e.target as HTMLInputElement
