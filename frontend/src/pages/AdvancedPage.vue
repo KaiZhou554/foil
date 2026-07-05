@@ -47,7 +47,7 @@
         <n-card :title="t('buildPage.iconCard')" size="small">
           <div class="flex items-center gap-4">
             <img v-if="customIconData" :src="customIconData" class="w-16 h-16 rounded-xl object-cover shadow-sm border border-neutral-200 dark:border-neutral-700 shrink-0" />
-            <div v-else class="w-16 h-16 rounded-xl bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-sm shrink-0">{{ iconLetter }}</div>
+            <div v-else class="w-16 h-16 rounded-xl bg-linear-to-br from-[#fff4dd] to-[#e16668] flex items-center justify-center text-white text-3xl font-bold shadow-sm shrink-0">{{ iconLetter }}</div>
             <div class="flex-1">
               <div class="text-neutral-500 dark:text-neutral-400 mb-2">{{ t('buildPage.iconHint') }}</div>
               <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="onIconFileSelected" />
@@ -60,7 +60,7 @@
         </n-card>
 
         <!-- Package name & Version (always visible) -->
-        <div class="bg-white dark:bg-neutral-800 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-4 space-y-4">
+        <n-card size="small">
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ t('buildPage.pkgPreview') }}</span>
@@ -76,7 +76,7 @@
             <label class="text-sm text-neutral-500 dark:text-neutral-400 block mb-1.5">{{ t('buildPage.versionLabel') }}</label>
             <n-input v-model:value="versionName" :placeholder="t('buildPage.versionPlaceholder')" :allow-input="onlyAllowVersion" maxlength="20" />
           </div>
-        </div>
+        </n-card>
 
         <!-- Certificate -->
         <n-card size="small">
@@ -139,7 +139,7 @@
         </n-card>
 
         <!-- Build button -->
-        <BuildButton :disabled="!canBuild || building" :building="building" :idle-text="t('buildPage.btnBuild')" :busy-text="t('buildPage.btnBuilding')" @click="buildAPK" />
+        <BuildButton :disabled="!canBuild || building" :building="building" :idle-text="t('buildPage.btnBuild')" :busy-text="t('buildPage.btnBuilding')" @click="buildAPK" class="max-w-sm pb-6" />
       </div>
     </n-message-provider>
 

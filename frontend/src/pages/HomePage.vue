@@ -157,7 +157,7 @@
         :idle-text="t('buildPage.btnBuild')"
         :busy-text="t('buildPage.btnBuilding')"
         @click="buildAPK"
-        class="max-w-sm"
+        class="max-w-sm pb-6"
       />
 
     </div>
