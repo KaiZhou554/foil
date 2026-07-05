@@ -62,16 +62,21 @@ func (m *Manager) Get() *Config {
 }
 
 // Update applies fn to the current configuration and persists the result.
-// fn receives a mutable pointer; any changes are saved to disk after fn returns.
-// If fn returns an error, the config is NOT saved and the error is propagated.
+// fn receives a mutable pointer to a copy; changes are saved to disk only
+// after fn returns without error. If fn returns an error, the config is
+// NOT changed in memory and the error is propagated.
 func (m *Manager) Update(fn func(*Config) error) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if err := fn(m.data); err != nil {
+	// Work on a copy so changes are atomic: fn failing = no mutation
+	cpy := *m.data
+	if err := fn(&cpy); err != nil {
 		return err
 	}
 
+	// Commit on success
+	*m.data = cpy
 	return m.saveUnsafe()
 }
 

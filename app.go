@@ -158,6 +158,18 @@ func (a *App) PrepareFileInput(filePath string) (string, error) {
 
 		for _, f := range r.File {
 			fpath := filepath.Join(tmpDir, f.Name)
+
+			// Prevent ZIP Slip: ensure the resolved path stays inside tmpDir
+			absFPath, err := filepath.Abs(fpath)
+			if err != nil {
+				return "", fmt.Errorf("resolve path %s: %w", f.Name, err)
+			}
+			absTmp, _ := filepath.Abs(tmpDir)
+			sep := string(filepath.Separator)
+			if !strings.HasPrefix(absFPath, absTmp+sep) && absFPath != absTmp {
+				return "", fmt.Errorf("illegal file path in archive: %s tries to escape destination", f.Name)
+			}
+
 			if f.FileInfo().IsDir() {
 				os.MkdirAll(fpath, 0755)
 				continue

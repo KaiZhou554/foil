@@ -4,8 +4,13 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"time"
 )
+
+// pkgCounter is an atomically incrementing counter used to ensure uniqueness
+// when generating package names in rapid succession.
+var pkgCounter atomic.Uint64
 
 // GeneratePackageName creates a unique Android package name from an app name.
 // The output targets oldPkgLen chars to allow in-place AXML string replacement.
@@ -22,8 +27,9 @@ func GeneratePackageName(appName string, existingPkgNames []string, oldPkgLen in
 		// Generate a unique suffix long enough to hit the target length
 		needed := oldPkgLen - len(base)
 		if needed > 0 {
-			// Use timestamp-based filler
-			filler := fmt.Sprintf("%x%x", time.Now().UnixNano(), time.Now().Unix())
+			// Use timestamp + atomic counter for uniqueness
+			ctr := pkgCounter.Add(1)
+			filler := fmt.Sprintf("%x%x%x", ctr, time.Now().UnixNano(), time.Now().Unix())
 			for len(base) < oldPkgLen {
 				base += filler
 				if len(base) > oldPkgLen {
@@ -38,11 +44,11 @@ func GeneratePackageName(appName string, existingPkgNames []string, oldPkgLen in
 
 	// Ensure uniqueness
 	for !isUnique(base, existingPkgNames) {
-		time.Sleep(time.Nanosecond) // ensure different timestamp
+		ctr := pkgCounter.Add(1)
 		base = "com." + sanitized
 		needed := oldPkgLen - len(base)
 		if needed > 0 {
-			filler := fmt.Sprintf("%x%x", time.Now().UnixNano(), time.Now().Unix())
+			filler := fmt.Sprintf("%x%x%x", ctr, time.Now().UnixNano(), time.Now().Unix())
 			base += filler[:min(needed, len(filler))]
 		}
 		if len(base) > oldPkgLen {

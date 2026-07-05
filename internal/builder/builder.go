@@ -257,6 +257,18 @@ func (b *Builder) unpackAPK(dest string) error {
 
 	for _, f := range r.File {
 		fpath := filepath.Join(dest, f.Name)
+
+		// Prevent ZIP Slip: ensure the resolved path stays inside dest
+		absFPath, err := filepath.Abs(fpath)
+		if err != nil {
+			return fmt.Errorf("resolve path %s: %w", f.Name, err)
+		}
+		absDest, _ := filepath.Abs(dest)
+		sep := string(filepath.Separator)
+		if !strings.HasPrefix(absFPath, absDest+sep) && absFPath != absDest {
+			return fmt.Errorf("illegal file path in APK: %s tries to escape destination", f.Name)
+		}
+
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(fpath, 0755)
 			continue
@@ -293,8 +305,11 @@ func (b *Builder) injectFrontend(unpackDir, projectDir string) error {
 	copied1 := 0
 	copied2 := 0
 
-	filepath.Walk(projectDir, func(path string, fi os.FileInfo, err error) error {
-		if err != nil || fi.IsDir() {
+	err := filepath.Walk(projectDir, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if fi.IsDir() {
 			return nil
 		}
 
@@ -336,6 +351,9 @@ func (b *Builder) injectFrontend(unpackDir, projectDir string) error {
 		copied2++
 		return nil
 	})
+	if err != nil {
+		return fmt.Errorf("walk project dir %s: %w", projectDir, err)
+	}
 
 	b.logf("Injected frontend: %d files (dist), %d files (root)", copied1, copied2)
 	return nil
@@ -551,7 +569,9 @@ func (b *Builder) signAPK(unsignedPath, signedPath string, in BuildInput) error 
 				b.logf("WARNING: SignV2 after zipalign failed: %v", err)
 			} else {
 				alignedData = alignedZ.Bytes()
-				os.WriteFile(signedPath, alignedData, 0644)
+				if err := os.WriteFile(signedPath, alignedData, 0644); err != nil {
+					b.logf("WARNING: write re-signed APK failed: %v", err)
+				} else {
 				if err := alignedZ.VerifyV2(); err != nil {
 					b.logf("WARNING: final v2 verification: %v", err)
 				} else {
@@ -559,6 +579,7 @@ func (b *Builder) signAPK(unsignedPath, signedPath string, in BuildInput) error 
 				}
 			}
 		}
+	}
 	}
 
 	b.logf("Signed APK -> %s (%d bytes)", signedPath, len(signedData))

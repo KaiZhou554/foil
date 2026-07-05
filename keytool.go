@@ -12,7 +12,7 @@ import (
 // listKeystoreAliases uses the bundled keytool to list all aliases in a keystore.
 func listKeystoreAliases(keystorePath, storePass string) ([]string, error) {
 	// Resolve keytool path relative to the bundled JRE
-	assetDir := filepath.Dir(AssetsDir())
+	assetDir := AssetsDir()
 	keytoolPath := filepath.Join(assetDir, "jre-minimal", "bin", "keytool.exe")
 
 	// Try keytool.exe on Windows
@@ -23,7 +23,20 @@ func listKeystoreAliases(keystorePath, storePass string) ([]string, error) {
 		}
 	}
 
-	cmd := exec.Command(keytoolPath, "-list", "-keystore", keystorePath, "-storepass", storePass)
+	// Write password to temp file to avoid exposing it in process list
+	passDir, err := os.MkdirTemp("", "foil-keytool-pass-*")
+	if err != nil {
+		return nil, fmt.Errorf("create password temp dir: %w", err)
+	}
+	defer os.RemoveAll(passDir)
+
+	passFile := filepath.Join(passDir, "store_pass.txt")
+	if err := os.WriteFile(passFile, []byte(storePass), 0600); err != nil {
+		return nil, fmt.Errorf("write password file: %w", err)
+	}
+
+	cmd := exec.Command(keytoolPath, "-list", "-keystore", keystorePath,
+		"-storepass:file", passFile)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out

@@ -85,7 +85,10 @@ func extractEmbedFS(fsys embed.FS, embedPath, destDir string) error {
 		if err != nil {
 			return err
 		}
-		rel, _ := filepath.Rel(embedPath, path)
+		rel, err := filepath.Rel(embedPath, path)
+		if err != nil {
+			return err
+		}
 		target := filepath.Join(destDir, rel)
 		if d.IsDir() {
 			return os.MkdirAll(target, 0755)
@@ -141,5 +144,6 @@ func main() {
 
 	if err != nil {
 		println("Error:", err.Error())
+		os.Exit(1)
 	}
 }
