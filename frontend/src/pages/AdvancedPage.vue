@@ -100,12 +100,9 @@
                       </template>
                     </n-input>
                     <n-input v-model:value="certPassword" :placeholder="t('advancedPage.certPasswordPlaceholder')" type="password" show-password-on="click" />
-                    <n-auto-complete
+                    <n-input
                       v-model:value="certAlias"
-                      :options="aliasOptions"
                       :placeholder="t('advancedPage.aliasPlaceholder')"
-                      :loading="loadingAliases"
-                      clearable
                     />
                     <n-input
                       v-model:value="keyPassword"
@@ -164,7 +161,7 @@ import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular
 import KeyMultiple20Filled from '@vicons/fluent/es/KeyMultiple20Filled'
 import Info16Regular from '@vicons/fluent/es/Info16Regular'
 import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NCollapseTransition, NDivider, NTooltip, NFloatButton, NAutoComplete, NSpin, useMessage, NMessageProvider } from 'naive-ui'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NCollapseTransition, NDivider, NTooltip, NFloatButton, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()
