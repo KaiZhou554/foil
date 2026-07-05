@@ -533,7 +533,7 @@ func (b *Builder) signAPK(unsignedPath, signedPath, certPath, certPassword, cert
 }
 
 // loadCustomSigningKeys reads a PKCS12/PFX keystore and returns signing certs.
-func (b *Builder) loadCustomSigningKeys(keyPath, password, alias, keyPassword string) ([]*android.SigningCert, error) {
+func (b *Builder) loadCustomSigningKeys(keyPath, password, _, keyPassword string) ([]*android.SigningCert, error) {
 	data, err := os.ReadFile(keyPath)
 	if err != nil {
 		return nil, fmt.Errorf("read keystore: %w", err)

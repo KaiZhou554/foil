@@ -26,7 +26,7 @@ func patchAllStrings(unpackDir, pkgName, appName, verName string, verCode int32)
 			if err != nil {
 				return nil
 			}
-			patched, err := patchAXMLManifest(data, pkgName, appName, verName, verCode)
+			patched, err := patchAXMLManifest(data, pkgName, verName, verCode)
 			if err != nil {
 				return fmt.Errorf("patch manifest: %w", err)
 			}
@@ -48,7 +48,7 @@ func patchAllStrings(unpackDir, pkgName, appName, verName string, verCode int32)
 }
 
 // patchAXMLManifest modifies key values in AndroidManifest.xml using proper AXML parsing.
-func patchAXMLManifest(data []byte, pkgName, appName, verName string, verCode int32) ([]byte, error) {
+func patchAXMLManifest(data []byte, pkgName, verName string, verCode int32) ([]byte, error) {
 	doc, err := axml.Parse(data)
 	if err != nil {
 		return nil, fmt.Errorf("axml parse: %w", err)
