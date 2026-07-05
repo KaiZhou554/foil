@@ -65,11 +65,3 @@ func loadCertInfo() (*certInfo, error) {
 	}
 	return &info, nil
 }
-
-// clearCertInfo removes the encrypted cert info file.
-func clearCertInfo() error {
-	if err := os.Remove(certStoragePath()); err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	return nil
-}

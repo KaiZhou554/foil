@@ -51,20 +51,6 @@ func NewManager(configPath string) (*Manager, error) {
 	return m, nil
 }
 
-// Load reads the TOML config file from disk.
-func (m *Manager) Load() error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.loadUnsafe()
-}
-
-// Save writes the current configuration to disk, overwriting the old file.
-func (m *Manager) Save() error {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return m.saveUnsafe()
-}
-
 // Get returns a copy of the current configuration.
 // Safe for concurrent use.
 func (m *Manager) Get() *Config {

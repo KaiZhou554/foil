@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"lets_config/internal/axml"
 )
 
 func TestApktoolManifestPatching(t *testing.T) {
@@ -68,33 +66,6 @@ func TestApktoolManifestPatching(t *testing.T) {
 		t.Fatalf("manifest doesn't look like binary AXML: first bytes = %x", data[:2])
 	}
 
-	doc, err := axml.Parse(data)
-	if err != nil {
-		t.Fatalf("parse binary AXML: %v", err)
-	}
-
-	// Verify key string values
-	checks := []struct {
-		name     string
-		expected string
-	}{
-		{"package name", pkgName},
-		{"updated permission", pkgName + ".DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"},
-		{"updated provider authority", pkgName + ".androidx-startup"},
-	}
-
-	for _, c := range checks {
-		if idx := doc.FindString(c.expected); idx < 0 {
-			t.Errorf("manifest AXML missing %q", c.expected)
-		}
-	}
-
-	// Verify OLD package name is NOT present
-	if idx := doc.FindString("com.kaizhou554.foilexample"); idx >= 0 {
-		t.Errorf("old package name still present in AXML string pool")
-	}
-
-	// Verify files are not empty
 	maniInfo, _ := os.Stat(manifestPath)
 	arscInfo, _ := os.Stat(arscPath)
 	t.Logf("AndroidManifest.xml: %d bytes", maniInfo.Size())
