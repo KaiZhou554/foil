@@ -471,6 +471,9 @@ func (b *Builder) signAPK(unsignedPath, signedPath, certPath, certPassword, cert
 	}
 
 	// Parse and sign
+	if len(keys) > 0 {
+		b.logf("Keys loaded: %d key(s), cert: %s", len(keys), keys[0].CertPath)
+	}
 	z, err := apksign.NewZip(unsignedData)
 	if err != nil {
 		return fmt.Errorf("parse apk: %w", err)
