@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NSelect, NRadio, NRadioGroup, NInput, NButton, NSwitch, NCollapseTransition } from 'naive-ui'
 import { useAppStore } from '@/stores/appStore'
@@ -108,8 +108,16 @@ const languageOptions = [
 ]
 
 // ── Location state ──
-const customPath = ref('')
+const customPath = ref(appStore.outputDir || '')
 const localMode = ref<'desktop' | 'custom'>(appStore.outputDir ? 'custom' : 'desktop')
+
+// Sync customPath when store loads (config might load after mount)
+watch(() => appStore.outputDir, (val) => {
+  if (val) {
+    customPath.value = val
+    localMode.value = 'custom'
+  }
+})
 
 function onLocationModeChange(val: string) {
   localMode.value = val as 'desktop' | 'custom'

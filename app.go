@@ -33,15 +33,22 @@ type App struct {
 func NewApp(cfg *config.Manager) *App {
 	appData := filepath.Join(os.Getenv("APPDATA"), "unieditdept", "foil")
 
+	b := builder.New(
+		filepath.Join(AssetsDir(), "foil-example.apk"), // template APK
+		DesktopPath(), // default output: real Desktop
+		filepath.Join(appData, "keys"),
+		filepath.Join(appData, "builds"),
+		AssetsDir(), // bundled assets dir (jre-minimal, apksigner.jar, etc.)
+	)
+
+	// Sync output directory from persisted config
+	if outputDir := cfg.Get().OutputDir; outputDir != "" {
+		b.OutputDir = outputDir
+	}
+
 	return &App{
-		Config: cfg,
-		Builder: builder.New(
-			filepath.Join(AssetsDir(), "foil-example.apk"), // template APK
-			DesktopPath(), // default output: real Desktop
-			filepath.Join(appData, "keys"),
-			filepath.Join(appData, "builds"),
-			AssetsDir(), // bundled assets dir (jre-minimal, apksigner.jar, etc.)
-		),
+		Config:  cfg,
+		Builder: b,
 	}
 }
 
