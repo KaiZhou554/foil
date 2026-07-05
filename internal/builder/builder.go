@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"lets_config/internal/apksigner/android"
@@ -53,6 +54,7 @@ type Builder struct {
 
 	KeepWorkDir bool // set true to keep temp files for debugging
 
+	mu      sync.Mutex // guards concurrent Build() calls
 	tempDirs []string   // extra temp dirs to clean up (e.g. from PrepareFileInput)
 	logBuf   bytes.Buffer
 	logger   *log.Logger
@@ -95,6 +97,10 @@ func (b *Builder) logf(format string, args ...interface{}) {
 
 // Build runs the full pipeline end-to-end.
 func (b *Builder) Build(in BuildInput) (result *BuildResult, err error) {
+	// Prevent concurrent builds from corrupting shared state (logBuf, tempDirs)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
 	// Catch panics and convert to errors for better debugging
 	defer func() {
 		if r := recover(); r != nil {
@@ -737,47 +743,11 @@ func (b *Builder) loadSigningKeys() ([]*android.SigningCert, error) {
 	}, nil
 }
 
-// generateKeyPair creates an RSA 2048-bit key and self-signed cert using crypto/x509.
+// generateKeyPair creates an RSA 2048-bit key and self-signed cert.
+// Tries the Go-native implementation directly (no external dependency on openssl).
 func generateKeyPair(keyPath, certPath string) error {
-	// We use crypto/x509 + crypto/rsa to generate and save in PEM format.
-	// The apksign library expects PKCS1 or PKCS8 private key + X.509 cert.
-	importCmd := fmt.Sprintf(
-		`openssl req -x509 -newkey rsa:2048 -keyout "%s" -out "%s" -days 10000 -nodes -subj "/CN=Foil"`,
-		keyPath, certPath)
-	// Try openssl first; fall back to Go-native generation
-	if err := runCommand(importCmd); err != nil {
-		return goGenerateKeyPair(keyPath, certPath)
-	}
-	return nil
-}
-
-func runCommand(cmd string) error {
-	// Simple command runner
-	c := parseCommand(cmd)
-	return c.Run()
-}
-
-// parseCommand splits a command string into name and args.
-func parseCommand(cmd string) *execCmd {
-	parts := strings.Fields(cmd)
-	if len(parts) == 0 {
-		return &execCmd{name: "echo"}
-	}
-	return &execCmd{name: parts[0], args: parts[1:]}
-}
-
-type execCmd struct {
-	name string
-	args []string
-}
-
-func (c *execCmd) Run() error {
-	cmd := createExec(c.name, c.args...)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s: %s: %s", c.name, err, string(output))
-	}
-	return nil
+	// Use Go-native key generation (crypto/rsa + crypto/x509)
+	return goGenerateKeyPair(keyPath, certPath)
 }
 
 // fail logs and wraps an error with step context.

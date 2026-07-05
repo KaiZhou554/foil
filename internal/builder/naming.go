@@ -131,6 +131,9 @@ func isValidVersionName(v string) bool {
 	if v == "" {
 		return true
 	}
+	if len(v) > 256 {
+		return false
+	}
 	for _, r := range v {
 		if r != '.' && (r < '0' || r > '9') {
 			return false
@@ -147,6 +150,9 @@ func isValidVersionName(v string) bool {
 func isValidPackageName(pkg string) bool {
 	if pkg == "" {
 		return true
+	}
+	if len(pkg) > 256 {
+		return false
 	}
 	segments := strings.Split(pkg, ".")
 	if len(segments) < 2 {

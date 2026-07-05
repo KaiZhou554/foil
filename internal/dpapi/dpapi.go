@@ -46,7 +46,7 @@ func Protect(plaintext []byte) ([]byte, error) {
 		uintptr(unsafe.Pointer(&out)),
 	)
 	if ret == 0 {
-		return nil, fmt.Errorf("CryptProtectData failed: %w", err)
+		return nil, fmt.Errorf("CryptProtectData failed (ret=0, err=%v)", err)
 	}
 
 	result := make([]byte, out.cbData)
@@ -80,7 +80,7 @@ func Unprotect(encrypted []byte) ([]byte, error) {
 		uintptr(unsafe.Pointer(&out)),
 	)
 	if ret == 0 {
-		return nil, fmt.Errorf("CryptUnprotectData failed: %w", err)
+		return nil, fmt.Errorf("CryptUnprotectData failed (ret=0, err=%v)", err)
 	}
 
 	result := make([]byte, out.cbData)

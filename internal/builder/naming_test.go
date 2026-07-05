@@ -29,7 +29,7 @@ func TestIsValidVersionName(t *testing.T) {
 		{"newline", "1\n0", false},
 		{"carriage return", "1\r0", false},
 		{"null byte", "1\x000", false},
-		{"very long", strings.Repeat("1.", 1000), true}, // all chars are '1' or '.' so technically valid; no length limit
+		{"very long", strings.Repeat("1.", 1000), false}, // exceeds 256-char limit
 	}
 
 	for _, tt := range tests {
@@ -65,7 +65,7 @@ func TestIsValidPackageName(t *testing.T) {
 		{"newline", "com.app\n.hack", false},
 		{"sql injection", "com.';DROP TABLE;--", false},
 		{"path traversal", "com.../etc", false},
-		{"very long", "com." + strings.Repeat("a", 500), true}, // all lowercase letters = valid; no length limit
+		{"very long", "com." + strings.Repeat("a", 500), false}, // exceeds 256-char limit
 		{"valid long segment", "com." + strings.Repeat("a", 100), true},
 	}
 
