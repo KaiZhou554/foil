@@ -2,6 +2,8 @@
 
 English | [简体中文](README_zh.md)
 
+![Demo Image](docs/demo.webp)
+
 A desktop app for building custom Android APK files from any HTML project. Built with Go + Wails2.
 
 **No Java / Android SDK required** — everything needed is bundled: a minimal JRE, Apktool, template APK, Apksigner, and signing keys generator.

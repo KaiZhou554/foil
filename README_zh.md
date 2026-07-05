@@ -2,6 +2,8 @@
 
 [English](README.md) | 简体中文
 
+![Demo Image](docs/demo.webp)
+
 从任意 HTML 项目构建自定义 Android APK 的桌面应用。基于 Go + Wails2。
 
 **无需安装 Java / Android SDK** — 精简 JRE、Apktool、Apksigner、模板 APK 和签名密钥生成器全部内置。
