@@ -13,6 +13,8 @@ type Config struct {
 	UseCustomCert      bool   `toml:"useCustomCert"      json:"useCustomCert"`
 	RememberLevel      string `toml:"rememberLevel"      json:"rememberLevel"`
 	KeyPassSameAsStore bool   `toml:"keyPassSameAsStore" json:"keyPassSameAsStore"`
+	CompanyName        string `toml:"companyName"        json:"companyName"`
+	RememberCompany    bool   `toml:"rememberCompany"    json:"rememberCompany"`
 }
 
 // Validate checks that the loaded configuration has sensible values.
@@ -37,5 +39,7 @@ func DefaultConfig() *Config {
 		UseCustomCert:      false,
 		RememberLevel:      "off",
 		KeyPassSameAsStore: true,
+		CompanyName:        "",
+		RememberCompany:    false,
 	}
 }

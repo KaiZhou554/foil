@@ -166,7 +166,7 @@ import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular
 import Save24Regular from '@vicons/fluent/es/Save24Regular'
 import Info16Regular from '@vicons/fluent/es/Info16Regular'
 import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NSpace, NCollapseTransition, NDivider, NTooltip, NFloatButton, useMessage, NMessageProvider } from 'naive-ui'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NCollapseTransition, NDivider, NTooltip, NFloatButton, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()
@@ -264,6 +264,11 @@ onMounted(async () => {
   }
   rememberLevel.value = appStore.rememberLevel || 'off'
 
+  // Restore company name if enabled
+  if (appStore.rememberCompany && appStore.companyName) {
+    pkgSegment2.value = appStore.companyName
+  }
+
   if (rememberLevel.value !== 'off') {
     const info = await LoadCertInfo()
     if (info && info.certPath) {
@@ -304,6 +309,14 @@ watch([certPath, certPassword, certAlias, keyPassword, rememberLevel], () => {
   appStore.rememberLevel = rememberLevel.value
   appStore.saveConfig()
   persistCertInfo()
+})
+
+// Auto-save company name when enabled
+watch(pkgSegment2, (val) => {
+  if (appStore.rememberCompany) {
+    appStore.companyName = val
+    appStore.saveConfig()
+  }
 })
 
 async function tryDetectAliases(path: string, pass: string) {
@@ -353,8 +366,13 @@ async function buildAPK() {
 
     const seg1 = pkgSegment1.value || 'com'
     const seg2 = pkgSegment2.value || 'app'
-    const seg3 = pkgSegment3.value || 'app'
-    const customPkg = `${seg1}.${seg2}.${seg3}`
+    let customPkg = `${seg1}.${seg2}`
+    if (pkgSegment3.value) {
+      customPkg += `.${pkgSegment3.value}`
+    } else {
+      // Empty third segment → let backend auto-generate
+      customPkg = ''
+    }
 
     const iconPaths = await GetIconPaths()
     const icons: Record<string, string> = {}
@@ -511,6 +529,15 @@ function resizeImage(dataUrl: string, size: number, _isForeground: boolean): Pro
     }
     img.onerror = () => reject(new Error('Failed to load image'))
     img.src = dataUrl
+  })
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((res, rej) => {
+    const r = new FileReader()
+    r.onload = () => { const s = r.result as string; res(s.substring(s.indexOf(',') + 1)) }
+    r.onerror = () => rej(new Error('Failed'))
+    r.readAsDataURL(blob)
   })
 }
 </script>

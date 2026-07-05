@@ -20,6 +20,8 @@ export const useAppStore = defineStore('app', () => {
   const useCustomCert = ref<boolean>(false)
   const rememberLevel = ref<string>('off')
   const keyPassSameAsStore = ref<boolean>(true)
+  const companyName = ref<string>('')
+  const rememberCompany = ref<boolean>(false)
 
   /** Whether the config has been loaded from the backend yet. */
   const configLoaded = ref<boolean>(false)
@@ -38,6 +40,8 @@ export const useAppStore = defineStore('app', () => {
       useCustomCert.value = cfg.useCustomCert ?? false
       rememberLevel.value = cfg.rememberLevel || 'off'
       keyPassSameAsStore.value = cfg.keyPassSameAsStore ?? true
+      companyName.value = cfg.companyName || ''
+      rememberCompany.value = cfg.rememberCompany ?? false
       configLoaded.value = true
     } catch (err) {
       console.error('Failed to load config from backend:', err)
@@ -58,6 +62,8 @@ export const useAppStore = defineStore('app', () => {
         useCustomCert: useCustomCert.value,
         rememberLevel: rememberLevel.value,
         keyPassSameAsStore: keyPassSameAsStore.value,
+        companyName: companyName.value,
+        rememberCompany: rememberCompany.value,
       }))
     } catch (err) {
       console.error('Failed to save config to backend:', err)
@@ -112,6 +118,8 @@ export const useAppStore = defineStore('app', () => {
     useCustomCert,
     rememberLevel,
     keyPassSameAsStore,
+    companyName,
+    rememberCompany,
     configLoaded,
     isMaximized,
     sidebarOpen,

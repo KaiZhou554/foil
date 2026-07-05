@@ -35,6 +35,8 @@ export namespace config {
 	    useCustomCert: boolean;
 	    rememberLevel: string;
 	    keyPassSameAsStore: boolean;
+	    companyName: string;
+	    rememberCompany: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -51,6 +53,8 @@ export namespace config {
 	        this.useCustomCert = source["useCustomCert"];
 	        this.rememberLevel = source["rememberLevel"];
 	        this.keyPassSameAsStore = source["keyPassSameAsStore"];
+	        this.companyName = source["companyName"];
+	        this.rememberCompany = source["rememberCompany"];
 	    }
 	}
 

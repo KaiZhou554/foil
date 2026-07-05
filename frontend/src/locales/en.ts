@@ -33,6 +33,7 @@ export default {
     btnBrowse: 'Browse…',
     showFloatButton: 'Show Build Log',
     openAfterBuild: 'Open Folder After Build',
+    rememberCompany: 'Remember Company Name',
     about: 'About',
     aboutDesc: 'A desktop app for building custom Android APK files from any HTML project.',
   },

@@ -177,7 +177,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BuildAPK, GetIconPaths, SelectDirectory, SelectFile, PrepareFileInput, OpenFolder } from '../../wailsjs/go/main/App'
 import { useAppStore } from '@/stores/appStore'
@@ -317,6 +317,23 @@ function previewPkg() {
 }
 
 // ── Build ──
+
+// Restore company name from store on mount
+const __restoreCompany = () => {
+  if (appStore.rememberCompany && appStore.companyName) {
+    pkgSegment2.value = appStore.companyName
+  }
+}
+__restoreCompany()
+
+// Auto-save company name when enabled
+watch(pkgSegment2, (val) => {
+  if (appStore.rememberCompany) {
+    appStore.companyName = val
+    appStore.saveConfig()
+  }
+})
+
 async function buildAPK() {
   if (!canBuild.value || building.value) return
 
@@ -333,8 +350,12 @@ async function buildAPK() {
 
     const seg1 = pkgSegment1.value || 'com'
     const seg2 = pkgSegment2.value || 'app'
-    const seg3 = pkgSegment3.value || 'app'
-    const customPkg = `${seg1}.${seg2}.${seg3}`
+    let customPkg = `${seg1}.${seg2}`
+    if (pkgSegment3.value) {
+      customPkg += `.${pkgSegment3.value}`
+    } else {
+      customPkg = ''
+    }
     if (customPkg) {
       buildLog.value += `${t('buildPage.logCustomPkg')}${customPkg}\n`
     }
