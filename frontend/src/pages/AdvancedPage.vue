@@ -168,7 +168,7 @@ import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular
 import KeyMultiple20Filled from '@vicons/fluent/es/KeyMultiple20Filled'
 import Info16Regular from '@vicons/fluent/es/Info16Regular'
 import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NCollapseTransition, NDivider, NPopover, NFloatButton, useMessage, NMessageProvider } from 'naive-ui'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NCollapseTransition, NDivider, NPopover, NFloatButton, NTooltip, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()
