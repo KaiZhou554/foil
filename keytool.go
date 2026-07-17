@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 // listKeystoreAliases uses the bundled keytool to list all aliases in a keystore.
@@ -37,6 +38,7 @@ func listKeystoreAliases(keystorePath, storePass string) ([]string, error) {
 
 	cmd := exec.Command(keytoolPath, "-list", "-keystore", keystorePath,
 		"-storepass:file", passFile)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
