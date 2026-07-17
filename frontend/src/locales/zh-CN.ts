@@ -87,6 +87,7 @@ export default {
     logCustomPkg: '使用自定义包名：',
     logBuilding: '正在生成 APK...\n',
     floatPlaceholder: '暂无构建记录',
+    copyLog: '复制日志',
   },
 
   advancedPage: {

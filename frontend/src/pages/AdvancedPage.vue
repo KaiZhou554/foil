@@ -139,7 +139,7 @@
     </n-message-provider>
 
     <!-- Float button -->
-    <n-tooltip v-if="appStore.showFloatButton" trigger="hover" placement="left">
+    <n-popover v-if="appStore.showFloatButton" trigger="hover" placement="left">
       <template #trigger>
         <n-float-button :right="24" :bottom="24">
           <n-icon>
@@ -147,8 +147,15 @@
           </n-icon>
         </n-float-button>
       </template>
-      <span class="text-xs whitespace-pre-wrap" v-text="buildLog || t('buildPage.floatPlaceholder')" />
-    </n-tooltip>
+      <div style="max-width: 360px">
+        <pre style="white-space: pre-wrap; word-break: break-all; margin: 0; font-size: 12px">{{ buildLog || t('buildPage.floatPlaceholder') }}</pre>
+        <div style="text-align: right; margin-top: 8px">
+          <n-button size="tiny" @click="copyBuildLog">
+            {{ t('buildPage.copyLog') }}
+          </n-button>
+        </div>
+      </div>
+    </n-popover>
   </div>
 </template>
 
@@ -161,7 +168,7 @@ import CheckmarkCircle24Regular from '@vicons/fluent/es/CheckmarkCircle24Regular
 import KeyMultiple20Filled from '@vicons/fluent/es/KeyMultiple20Filled'
 import Info16Regular from '@vicons/fluent/es/Info16Regular'
 import BookPulse24Regular from '@vicons/fluent/es/BookPulse24Regular'
-import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NCollapseTransition, NDivider, NTooltip, NFloatButton, useMessage, NMessageProvider } from 'naive-ui'
+import { NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard, NInputGroup, NRadio, NRadioGroup, NSelect, NCollapseTransition, NDivider, NPopover, NFloatButton, useMessage, NMessageProvider } from 'naive-ui'
 import BuildButton from '@/components/BuildButton.vue'
 
 const { t } = useI18n()
@@ -219,7 +226,7 @@ const pkgSegment3 = ref('')
 const lastSeg2 = ref('')
 const versionName = ref('')
 const previewPkgName = computed(() => `${pkgSegment1.value || 'com'}.${pkgSegment2.value || 'app'}.${pkgSegment3.value || 'app'}`)
-function onlyAllowPkg(value: string) { return !value || /^[a-z][a-z0-9_.-]*$/.test(value) }
+function onlyAllowPkg(value: string) { return !value || /^[a-z][a-z0-9_.]*$/.test(value) }
 function onlyAllowVersion(value: string) {
   if (!value) return true
   if (!/^[\d.]*$/.test(value)) return false
@@ -543,5 +550,13 @@ function blobToBase64(blob: Blob): Promise<string> {
     r.onerror = () => rej(new Error('Failed'))
     r.readAsDataURL(blob)
   })
+}
+
+async function copyBuildLog() {
+  try {
+    await navigator.clipboard.writeText(buildLog.value)
+  } catch {
+    // fallback: silently ignore
+  }
 }
 </script>

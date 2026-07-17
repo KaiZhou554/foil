@@ -163,7 +163,7 @@
     </div>
 
     <!-- Float button -->
-    <n-tooltip v-if="appStore.showFloatButton" trigger="hover" placement="left">
+    <n-popover v-if="appStore.showFloatButton" trigger="hover" placement="left">
       <template #trigger>
         <n-float-button :right="24" :bottom="24">
           <n-icon>
@@ -171,8 +171,15 @@
           </n-icon>
         </n-float-button>
       </template>
-      <span class="text-xs whitespace-pre-wrap" v-text="buildLog || t('buildPage.floatPlaceholder')" />
-    </n-tooltip>
+      <div style="max-width: 360px">
+        <pre style="white-space: pre-wrap; word-break: break-all; margin: 0; font-size: 12px">{{ buildLog || t('buildPage.floatPlaceholder') }}</pre>
+        <div style="text-align: right; margin-top: 8px">
+          <n-button size="tiny" @click="copyBuildLog">
+            {{ t('buildPage.copyLog') }}
+          </n-button>
+        </div>
+      </div>
+    </n-popover>
   </div>
 </template>
 
@@ -187,7 +194,7 @@ import BuildButton from '@/components/BuildButton.vue'
 import {
   NInput, NButton, NTag, NIcon, NTabPane, NTabs, NCard,
   NInputGroup, NCollapseItem, NCollapse,
-  NFloatButton, NTooltip,
+  NFloatButton, NPopover,
   useMessage,
 } from 'naive-ui'
 
@@ -299,7 +306,7 @@ function clearIcon() {
 
 // ── Package name validation ──
 function onlyAllowPkg(value: string) {
-  return !value || /^[a-z][a-z0-9_.-]*$/.test(value)
+  return !value || /^[a-z][a-z0-9_.]*$/.test(value)
 }
 
 function onlyAllowVersion(value: string) {
@@ -535,5 +542,13 @@ function blobToBase64(blob: Blob): Promise<string> {
     reader.onerror = () => reject(new Error('Failed to read blob'))
     reader.readAsDataURL(blob)
   })
+}
+
+async function copyBuildLog() {
+  try {
+    await navigator.clipboard.writeText(buildLog.value)
+  } catch {
+    // fallback: silently ignore
+  }
 }
 </script>

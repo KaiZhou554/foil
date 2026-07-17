@@ -87,6 +87,7 @@ export default {
     logCustomPkg: 'Using custom package: ',
     logBuilding: 'Building APK...\n',
     floatPlaceholder: 'No build yet',
+    copyLog: 'Copy log',
   },
 
   advancedPage: {
